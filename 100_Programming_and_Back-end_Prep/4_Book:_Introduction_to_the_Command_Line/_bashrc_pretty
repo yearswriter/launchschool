@@ -8,6 +8,7 @@ fi
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
 alias walk="cd ~/git_basics/100_Programming_and_Back-end_Prep/12_Book:_Learn_to_Program"
+alias here="mv ~/git_basics/*.rb ./"
 # User specific aliases and functions
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
