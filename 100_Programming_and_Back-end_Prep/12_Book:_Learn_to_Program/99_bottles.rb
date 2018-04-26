@@ -22,4 +22,8 @@ until i<1
 end
 puts "No more bottles of beer on the wall, no more bottles of beer."
 puts "Go to the store and buy some more, 99 bottles of beer on the wall."
-#suprised me how messy this is T_T. My brain hurts.
+=begin 
+suprised me how messy this is in exactly this form T_T. My brain hurts. 
+Methink `yield` can help. I googled it's history, and I can reproduce original 6
+strings, much easier but that's no fun:
+=end
