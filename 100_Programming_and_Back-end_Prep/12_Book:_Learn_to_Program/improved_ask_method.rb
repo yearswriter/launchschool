@@ -47,4 +47,4 @@ qq.ask
 puts "here is what mattered"
 $result.each {|a,q| puts "#{a} : #{q}"}
 #I do not comprehend something, it still does not returns me result even 
-# when I directly told it to do so 
+# when I directly told it to do so, only if I store in global variable it works
