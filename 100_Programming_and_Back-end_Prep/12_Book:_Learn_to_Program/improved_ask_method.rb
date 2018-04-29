@@ -1,4 +1,4 @@
-class Test 
+class Test  #surprise -_-
 =begin The idea is to keep all variables in those to, 
 everything else is "standart" formatting, so it could
  be any filler construct with actual hand-crafted questions
