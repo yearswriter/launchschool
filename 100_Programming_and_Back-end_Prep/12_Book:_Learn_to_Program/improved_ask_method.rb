@@ -1,4 +1,4 @@
-class Test  #surprise -_-
+class Test 
 =begin The idea is to keep all variables in those to, 
 everything else is "standart" formatting, so it could
  be any filler construct with actual hand-crafted questions
@@ -11,7 +11,7 @@ everything else is "standart" formatting, so it could
                             actual_questions: ["Do you wet the bed? (yes\\no)", false]})
     @intro=intro
     @psy_test=psy_test
-    $result=[]
+    @result=[]
   end
   
   def ask             
@@ -34,17 +34,16 @@ everything else is "standart" formatting, so it could
         else
           @psy_test[:actual_questions][1]=false
         end
-      $result.push @psy_test.fetch(:actual_questions)
+      @result.push @psy_test.fetch(:actual_questions)
     end 
     puts filler_qq_complete[filler_qq_index]
     filler_qq_complete.delete_at(filler_qq_index)
     answer = !!gets.chomp    
     end
+  return @result
   end
 end
 qq = Test.new
-qq.ask
+result = qq.ask
 puts "here is what mattered"
-$result.each {|a,q| puts "#{a} : #{q}"}
-#I do not comprehend something, it still does not returns me result even 
-# when I directly told it to do so, only if I store in global variable it works
+result.each {|a,q| puts "#{a} : #{q}"}
