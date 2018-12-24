@@ -1,0 +1,9 @@
+1. x = 2 # sets variable x to value 2
+
+2. puts x = 2 # prints value of x while setting it's value to 2 (also works as initialiser)
+
+3. p name = "Joe" # prints variable 'name' while setting it's value to "Joe" (also works as initialiser)
+
+4. four = "four" # sets variable 'four' value to "four"
+
+5. print something = "nothing"   # prints variable 'something' while setting it's value to "nothing" (also works as initialiser)

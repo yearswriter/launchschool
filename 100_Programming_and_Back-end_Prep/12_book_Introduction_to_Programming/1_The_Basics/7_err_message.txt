@@ -1,0 +1,1 @@
+error "unexpected ')', expecting '}'" tells me that there is opened but nor closed '(' bracket and that also somewhere there is opened but not closed '{' bracket, possibly typo ')' instead of '}'
