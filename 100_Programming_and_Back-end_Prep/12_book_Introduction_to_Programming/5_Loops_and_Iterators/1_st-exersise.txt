@@ -1,0 +1,7 @@
+x = [1, 2, 3, 4, 5]
+x.each do |a|
+  a + 1
+end
+# adds 1 to each number in a massive
+#end up something like 2 3 4 5 6 if it was puts a+1
+#but does not change massive itself,
