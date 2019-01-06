@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+  <title>Websocket Client</title>
+</head>
+<body>
+  <script>
+    var exampleSocket = new WebSocket("ws://localhost:100");
+    exampleSocket.onopen = function (event) {
+      exampleSocket.send("Can you hear me?"); 
+    };
+    exampleSocket.onmessage = function (event) {
+      console.log(event.data);
+    }
+  </script>
+</body>
+</html>
