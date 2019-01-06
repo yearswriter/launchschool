@@ -1,3 +1,4 @@
+#https://blog.honeybadger.io/building-a-simple-websockets-server-from-scratch-in-ruby/
 require 'socket'
 require 'digest'
 require 'base64'
