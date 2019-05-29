@@ -1,0 +1,1 @@
+ruby offiial source is ok, also stackexchange answers are usefull, as well as codeacademy, learnenough.com, and official rails documentation.

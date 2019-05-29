@@ -1,0 +1,7 @@
+def execute(&block)
+  block
+end
+
+execute { puts "Hello from inside the execute method!" }
+will print "Hello from inside the execute method!" returns nil
+#looked at the solution - yeah, ok, understood, needed block.call and it returns proc obj (since it is last "variable" on the method definition")

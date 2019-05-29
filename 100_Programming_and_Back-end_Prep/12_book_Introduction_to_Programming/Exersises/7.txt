@@ -1,0 +1,1 @@
+Difference between Array and Hash is in structure: one is dictionary with key -value pairs, another is indexed collection

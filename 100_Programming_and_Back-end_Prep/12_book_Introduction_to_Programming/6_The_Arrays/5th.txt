@@ -1,0 +1,4 @@
+string = "Welcome to America"
+a = string[6]   #returns 6th letter of the string - e
+b = string[11]  #returns 11th letter of the string - A
+c = string[19]  #out of array index, returns nil

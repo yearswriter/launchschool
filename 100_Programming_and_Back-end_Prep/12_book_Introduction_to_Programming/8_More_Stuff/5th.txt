@@ -1,0 +1,1 @@
+correct way to define method with block is with & (def execute(&block))
