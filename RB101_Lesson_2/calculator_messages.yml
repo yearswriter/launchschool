@@ -1,0 +1,52 @@
+ru:
+  promts:
+    hi:                "Привет, "
+    answer:            "Ответ: "
+    welcome:           "Добро пожаловатьв Калькулятор! Введите свое имя:"
+    valid_name:        "Введите, пожлуйста, адекватное имя."
+    valid_number:      "Ошибка! Ненастоящее число."
+    first_number:      "Введите первый операнд:"
+    second_number:     "Введите второй операнд:"
+    by_zero:           "Ошибка! Не могу поделить на ноль!"
+    try_again:         "Хотите еще повычислять?"
+    enter_name:        "Удостовертесь, что вы ввели имя"
+    bye:               ", пока! Спасибо за использование Калькулятора!"
+    short_operator_promt:  "Выберите * , / , - или +"
+    operator_promt:    |
+       Какую операцию провести?
+
+          Введите * чтобы умножить;
+          Введите / чтобы разделить;
+          Введите + чтобы сложить;
+          Введите - чтобы вычесть.
+  operators:
+    '+': "Складываю"
+    '-': "Вычитаю"
+    '*': "Умножаю"
+    '/': "Разделяю"
+en:
+  promts:
+    hi:                "Hi, "
+    answer:            "Answer is: "
+    welcome:           "Welcome to Calculator! Enter your name:"
+    valid_name:        "Make sure to enter a valid name."
+    valid_number:      "Error! Not a valid number!"
+    first_number:      "What is the first number?"
+    second_number:     "What is the second number?"
+    by_zero:           "Error! Cannot divide by zero!"
+    try_again:         "Do you want to performe another calculation?"
+    enter_name:        "Make sure to enter name."
+    bye:               ", goodbye! Thank you, for using Calculator!"
+    short_operator_promt:  "Must choose * , / , - or +"
+    operator_promt:    |
+       What operation would you like to perform?
+
+          Input * to multiply;
+          Input / to divide;
+          Input + to add;
+          Input - to substract.
+  operators:
+    '+': "Adding"
+    '-': "Substracting"
+    '*': "Multiplying"
+    '/': "Dividing"

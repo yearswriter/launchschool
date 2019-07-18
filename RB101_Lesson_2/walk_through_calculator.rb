@@ -1,81 +1,69 @@
+require 'yaml'
+CONFIG    = YAML.load_file('calculator_messages.yml')
+MESSAGES  = {}
+OPERATORS = {}
 def promt(message)
-  puts(">> #{message}")
-end
-
-def integer?(number)
-  /^\d+$/.match(number) && true
-end
-
-def float?(number)
-  /^(\d)|(\d*\.?\d*)$/.match(number) && true
+  Kernel.puts(">> #{message}")
 end
 
 def valid_number?(number)
-  integer?(number) || float?(number)
+  /^\d+\.*\d*$/.match(number)
 end
 
-def operation_to_message(operator)
-  case operator
-  when '+'
-    'Adding'
-  when '-'
-    'Substracting'
-  when '*'
-    'Multiplying'
-  when '/'
-    'Dividing'
+loop do
+  promt("Choose locale (ru/en):")
+  locale = gets.chomp
+  if CONFIG[locale]
+    MESSAGES  = CONFIG[locale]['promts']
+    OPERATORS = CONFIG[locale]['operators']
+    break
+  else
+    promt("Wrong locale! It can be 'ru' or 'en' !")
   end
 end
 
-operator_promt = <<~OP_MSG
-  What operation would you like to perform?
-      Input * to multiply;
-      Input / to divide;
-      Input + to add;
-      Input - to substract.
-OP_MSG
 number1 = ''
 number2 = ''
 operator = ''
 
-promt("Welcome to Calculator! Enter your name: ")
+promt(MESSAGES['welcome'])
 name = ''
 
 loop do
   name = Kernel.gets().chomp()
   if name.empty?()
-    promt("Make sure to enter name.")
+    promt(MESSAGES['enter_name'])
   else
     break
   end
 end
 
-promt("Hi, #{name}")
+promt(MESSAGES['hi'] + name)
 
 loop do # main loop
   loop do
-    promt("What is the first number?")
+    promt(MESSAGES['first_number'])
     number1 = Kernel.gets().chomp()
 
     if valid_number?(number1)
       break
     else
-      promt("Error! Not a valid number!")
+      promt(MESSAGES['valid_number'])
     end
   end
 
   loop do
-    promt("What is the second number?")
+    promt(MESSAGES['second_number'])
     number2 = Kernel.gets().chomp()
 
     if valid_number?(number2)
       break
     else
-      promt("Error! Not a valid number!")
+      promt(MESSAGES['valid_number'])
     end
   end
 
-  promt(operator_promt)
+  promt(MESSAGES['operator_promt'])
 
   loop do
     operator = Kernel.gets().chomp()
@@ -83,11 +71,11 @@ loop do # main loop
     if %w(* / + -).include?(operator)
       break
     else
-      promt("Must choose * , / , - or +")
+      promt(MESSAGES['short_operator_promt'])
     end
   end
 
-  promt("#{operation_to_message(operator)} #{number1} and #{number2}")
+  promt("#{OPERATORS[operator]} #{number1} and #{number2}")
 
   answer = case operator
            when '*'
@@ -96,18 +84,17 @@ loop do # main loop
              if number2.to_f() != 0
                number1.to_f() / number2.to_f()
              else
-               "Error! Cannot divide by zero!"
+               MESSAGES['by_zero']
              end
            when '+'
              number1.to_i() + number2.to_i()
            when '-'
              number1.to_i() - number2.to_i()
-           else
-             "Must choose * , / , - or +"
            end
-  promt("Answer is: #{answer}")
-  promt("Do you want to performe another calculation?")
+
+  promt(MESSAGES['answer'] + answer.to_s)
+  promt(MESSAGES['try_again'])
   break unless Kernel.gets().chomp().downcase().include?("y")
 end
 
-promt("Goodbye!")
+promt(name + MESSAGES['bye'])
