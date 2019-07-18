@@ -1,0 +1,59 @@
+#a method that returns the sum of two integers
+
+Ask to input of first number
+Get value from IO
+Ask to input second number
+Get value from IO
+Calculate sum of first number and second number
+Print out human-readable result
+
+START
+PRINT invite_string_1
+SET first_number = GET
+PRINT invite_string_2
+SET second_number = GET
+SET result = first_number + second_number
+PRINT first_number "+" second_number "=" result
+END
+
+#a method that takes an array of strings, and returns a string that is all those strings concatenated together
+
+Set an array of strings and length of n to initial data
+Set the result to empty string
+Set an iterator to 0
+Iterate through the array of strings until iterator is equal to the length of it
+ - on each iteration add current element to the result variable
+ - on each iteration increment iterator by one
+Print out result variable
+
+START
+SET array_of_strings = [s1,s2..sn] #n length
+SET iterator = 0
+SET result = ''
+WHILE iterator < n
+  SET result = result + array_of_strings[iterator]
+  SET iterator = iterator + 1
+
+PRINT result
+END
+
+#a method that takes an array of integers, and returns a new array with every other element
+Set an array of integers and length of n to initial data
+Set an array for result as empty array of unknown length
+Set an iterator to 0
+Iterate through iterator until iterator is equal to the length of the array of integers
+ - on each iteration add to the result array new element, equal to the array element
+ on the position equal to the current iterator value
+ - on each iteration increment iterator by two
+Print out result variable
+
+START
+SET array_of_integers = [s1,s2..sn] #n length
+SET iterator = 0
+SET result = []
+WHILE iterator < n
+  SET result = result + array_of_integers[iterator]
+  SET iterator = iterator + 2
+
+PRINT result
+END
