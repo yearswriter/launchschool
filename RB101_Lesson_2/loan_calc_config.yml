@@ -15,9 +15,9 @@ tarifs:
         min_loan:     800_000
         max_duration: 5
 id_methods:
-  phone_number: /^\+\d+\(\d{3}\)\d{3}-\d{2}-\d{2}$/
-  email:        /(\d*[A-z]*\d*\.)*(\d*[A-z]*\d*)+@()\d*[A-z]\d*)+\.[a-z][a-z]+/
-  post_number:  /^\d{8}/
+  phone: ^\+\d+\(\d{3}\)\d{3}-\d{2}-\d{2}$
+  email: (\d*[A-z]*\d*\.)*(\d*[A-z]*\d*)+@(\d*[A-z]\d*)+\.[a-z][a-z]+$
+  post:  ^\d{8}
 promts:
   hi:              |
     /#########################################\
@@ -31,7 +31,7 @@ promts:
   help:            |
     /+++++++++++++++++++++++++++++++++++++++++\
     |  Choose your action:                    |
-    |            Press 's' to restart..       |
+    |            Press 's' to [re]start..     |
     |                  ..processing the loan. |
     |            Press 'l' to list loan..     |
     |                               ..tarifs. |
@@ -49,11 +49,11 @@ promts:
   promt_id_method: |
     /+++++++++++++++++++++++++++++++++++++++++\
     |  Choose your identification:            |
-    |            Press '1' to id..            |
+    |            Enter 'phone' to id..        |
     |                      ..by phone number. |
-    |            Press '2' to id..            |
+    |            Enter 'email' to id..        |
     |                      ..by email.        |
-    |            Press '3' to id..            |
+    |            Enter 'post' to id..         |
     |                       ..by post number. |
     \+++++++++++++++++++++++++++++++++++++++++/
   confirm_quit:    |
@@ -67,3 +67,7 @@ promts:
   bot_line:        |
     \#########################################/
   bye: 'Goodbye, '
+  enter_name:      |
+    /#########################################\
+    |        Please, enter your name:         |
+    \#########################################/
