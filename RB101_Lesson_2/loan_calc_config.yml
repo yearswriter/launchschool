@@ -10,27 +10,60 @@ tarifs:
         min_loan:     950
         max_duration: 0.5
   long:
-        apr:          0.5
+        apr:          0.05
         max_loan:     1_000_000
+        min_loan:     800_000
         max_duration: 5
 id_methods:
   phone_number: /^\+\d+\(\d{3}\)\d{3}-\d{2}-\d{2}$/
   email:        /(\d*[A-z]*\d*\.)*(\d*[A-z]*\d*)+@()\d*[A-z]\d*)+\.[a-z][a-z]+/
   post_number:  /^\d{8}/
 promts:
-  hi: |
+  hi:              |
     /#########################################\
     |                                         |
     | Welcome to "Practically for free!" LTD! |
     |                  *-*-*                  |
+    |            Press 's' to start..         |
+    |                  ..processing the loan. |
+    |            Press 'h' for help.          |
     \#########################################/
-  help: |
+  help:            |
     /+++++++++++++++++++++++++++++++++++++++++\
     |  Choose your action:                    |
-    |            Press 's' to start loan      |
-    |                               paperwork |
-    |            Press 'l' to list loan       |
-    |                                 tarifs  |
-    |            Press 'h' for this message   |
-    |            Press 'q' to exit            |
+    |            Press 's' to restart..       |
+    |                  ..processing the loan. |
+    |            Press 'l' to list loan..     |
+    |                               ..tarifs. |
+    |            Press 'h' for this message.  |
+    |            Press 'c' to check current.. |
+    |                        ..configuration. |
+    |            Press 'q' to exit.           |
     \+++++++++++++++++++++++++++++++++++++++++/
+  invalid_answer:  |
+    /#########################################\
+    |                    !E!                  |
+    |   Invalid answer! Press 'h' for help.   |
+    |                    !E!                  |
+    \#########################################/
+  promt_id_method: |
+    /+++++++++++++++++++++++++++++++++++++++++\
+    |  Choose your identification:            |
+    |            Press '1' to id..            |
+    |                      ..by phone number. |
+    |            Press '2' to id..            |
+    |                      ..by email.        |
+    |            Press '3' to id..            |
+    |                       ..by post number. |
+    \+++++++++++++++++++++++++++++++++++++++++/
+  confirm_quit:    |
+    /#########################################\
+    |                                         |
+    |        DO YOU REALLY WANT TO QUIT?      |
+    |                   y/n                   |
+    \#########################################/
+  top_line:        |
+    /#########################################\
+  bot_line:        |
+    \#########################################/
+  bye: 'Goodbye, '
