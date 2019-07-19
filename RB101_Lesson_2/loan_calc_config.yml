@@ -1,0 +1,36 @@
+tarifs:
+  short:
+    apr:          0.20
+    max_loan:     1_000
+    min_loan:     500
+    max_duration: 0.5
+  medium:
+        apr:          0.15
+        max_loan:     1_500
+        min_loan:     950
+        max_duration: 0.5
+  long:
+        apr:          0.5
+        max_loan:     1_000_000
+        max_duration: 5
+id_methods:
+  phone_number: /^\+\d+\(\d{3}\)\d{3}-\d{2}-\d{2}$/
+  email:        /(\d*[A-z]*\d*\.)*(\d*[A-z]*\d*)+@()\d*[A-z]\d*)+\.[a-z][a-z]+/
+  post_number:  /^\d{8}/
+promts:
+  hi: |
+    /#########################################\
+    |                                         |
+    | Welcome to "Practically for free!" LTD! |
+    |                  *-*-*                  |
+    \#########################################/
+  help: |
+    /+++++++++++++++++++++++++++++++++++++++++\
+    |  Choose your action:                    |
+    |            Press 's' to start loan      |
+    |                               paperwork |
+    |            Press 'l' to list loan       |
+    |                                 tarifs  |
+    |            Press 'h' for this message   |
+    |            Press 'q' to exit            |
+    \+++++++++++++++++++++++++++++++++++++++++/

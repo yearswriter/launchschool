@@ -1,3 +1,6 @@
+require 'yaml'
+CONFIG = YAML.load_file('calculator_messages.yml')
+
 =begin
   General plan:
   Make config with 3 different (named) tarif plans for loans
@@ -15,11 +18,15 @@
      - phone: /^\+\d+\(\d{3}\)\d{3}-\d{2}-\d{2}$/
      - email: /(\d*[A-z]*\d*\.)*(\d*[A-z]*\d*)+@()\d*[A-z]\d*)+\.[a-z][a-z]+/
      - id: /^\d{8}/
-   Greet User, Ask for Name, Family name, id in a loop with validations
+   Greet User, Ask for Name, Family name and for one of id fields, check id with regexp id in a loop with validations
       calculate monthly interest rate:
+      Present user with tarif plans and ask to choose
         m = p * (j/(1-(1+j)**(-n)))
         output:
-        On your tarif with APR=a,loan amount = p, and loan duration = n,
+        On your tarif "name" with APR=a,loan amount = p, and loan duration = n,
          your monthly payment will be m, with monthly interes rate of j%
          your total will be: m * 12
+         Ask if everything seems right
+         if no ask if start over
+         if no exit
 =end
