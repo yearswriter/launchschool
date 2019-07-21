@@ -5,14 +5,15 @@ TARIFS      = CONFIG['tarifs']
 ID_METHODS  = CONFIG['id_methods']
 PROMTS      = CONFIG['promts']
 CURRENT_CONFIG = {}
-CURRENT_CONFIG['name']='Stranger'
+CURRENT_CONFIG['name'] = 'Stranger'
 
-def quit()
+def quit
   puts PROMTS['confirm_quit']
   if gets.chomp.downcase.include?("y")
-    bye = sprintf(
+    bye = format(
       "#{PROMTS['top_line']}|#{PROMTS['bye']}%-32s|\n#{PROMTS['bot_line']}",
-      CURRENT_CONFIG['name'].to_s + "!")
+      CURRENT_CONFIG['name'].to_s + "!"
+    )
     puts bye
     true
   else
@@ -22,7 +23,7 @@ def quit()
 end
 
 def ask_name
-  input=''
+  input = ''
   loop do
     puts PROMTS['enter_name']
     input = gets.chomp.downcase.capitalize
@@ -32,16 +33,16 @@ def ask_name
       break
     end
   end
-  return input
+  input
 end
 
 def list_tarifs
-  TARIFS.each do |tarif_name,tarif_parameters|
+  TARIFS.each do |tarif_name, tarif_parameters|
     puts "Tarif name (c): " + tarif_name.to_s
-    puts sprintf("APR: %+8s%%",tarif_parameters['apr']*100)
-    puts sprintf("Mimimum loan amount: %8d$",tarif_parameters['min_loan'])
-    puts sprintf("Maximum loan amount: %8d$",tarif_parameters['max_loan'])
-    puts sprintf("APR: %+8s months",tarif_parameters['max_duration']*12)
+    puts format("APR: %+8s%%", tarif_parameters['apr'] * 100)
+    puts format("Mimimum loan amount: %8d$", tarif_parameters['min_loan'])
+    puts format("Maximum loan amount: %8d$", tarif_parameters['max_loan'])
+    puts format("APR: %+8s months", tarif_parameters['max_duration'] * 12)
   end
   false
 end
@@ -62,11 +63,11 @@ def enter_id
       puts PROMTS['invalid_answer']
     end
   end
-  return [method,value]
+  [method, value]
 end
 
 def select_tarifs
-  tarif={}
+  tarif = {}
   list_tarifs
   loop do
     puts "Enter name of desirable tarif:"
@@ -78,22 +79,22 @@ def select_tarifs
       puts PROMTS['invalid_answer']
     end
   end
-  return tarif
+  tarif
 end
 
 def ask_summ
   loop do
     puts "#{CURRENT_CONFIG['name']}, please, enter your desireable loan summ:"
     loan = gets.chomp.to_f
-    if  loan <= CURRENT_CONFIG['tarif']['max_loan'] && loan >= CURRENT_CONFIG['tarif']['min_loan']
+    if loan <= CURRENT_CONFIG['tarif']['max_loan'] && loan >= CURRENT_CONFIG['tarif']['min_loan']
       CURRENT_CONFIG['loan'] = loan
       CURRENT_CONFIG['apr'] = CURRENT_CONFIG['tarif']['apr']
       break
     else
       puts "We are sorry, #{CURRENT_CONFIG['name']}, this summ is not aviable right now for you."
       sleep 3
-      correct_tarif= {}
-      TARIFS.each {|t| correct_tarif = t[1] if t[1]['max_loan'] >=loan && t[1]['min_loan'] <= loan}
+      correct_tarif = {}
+      TARIFS.each { |t| correct_tarif = t[1] if t[1]['max_loan'] >= loan && t[1]['min_loan'] <= loan }
       if correct_tarif && !correct_tarif.empty?
         puts "But it is aviable on this terms:"
         puts correct_tarif
@@ -122,19 +123,19 @@ end
 
 def process_loan
   CURRENT_CONFIG['name'] = ask_name
-  method,value = enter_id
+  method, value = enter_id
   CURRENT_CONFIG[method] = value
   CURRENT_CONFIG['tarif'] = select_tarifs
   ask_summ
   loan = CURRENT_CONFIG['loan']
-  duration = CURRENT_CONFIG['tarif']['max_duration']*12
+  duration = CURRENT_CONFIG['tarif']['max_duration'] * 12
   apr = CURRENT_CONFIG['tarif']['apr']
   monthly_interest_rate = apr / 12
   monthly_cash = loan / 12
   monthly_interest_cash = monthly_interest_rate * monthly_cash
-  monthly_total_cash = loan * (monthly_interest_rate / (1 - (1 + monthly_interest_rate)**(-duration)))
+  monthly_total_cash = loan * (monthly_interest_rate / (1 - (1 + monthly_interest_rate)**-duration))
   puts "Congratularions! You were granted #{loan.round(2)}$ loan!"
-  puts "For #{duration.to_i} months and #{ (apr * 100).round(2)}% APR"
+  puts "For #{duration.to_i} months and #{(apr * 100).round(2)}% APR"
   puts "Which will be #{(monthly_interest_rate * 100).round(2)}% (#{monthly_interest_cash.round(2)}$) interest per month."
   puts "Which result in #{(loan * apr).round(2)}$ of interest,"
   sleep 2
@@ -143,7 +144,7 @@ def process_loan
   puts "You can choose to close loan earlier, but with max duration for this tarif it will take"
   puts "#{duration.to_i} months of #{monthly_total_cash.round(2)}$ per month."
   sleep 0.5
-  puts "Do not miss your payments, #{CURRENT_CONFIG["name"]}, and have a good day!"
+  puts "Do not miss your payments, #{CURRENT_CONFIG['name']}, and have a good day!"
   true
 end
 
@@ -195,7 +196,7 @@ end
       Present user with tarif plans and ask to choose
         m = p * (j/(1-(1+j)**(-n)))
         output:
-        On your tarif "name" with APR=a,loan amount = p, and loan duration = n,
+        On your tarif "name" with APR = a,loan amount = p, and loan duration = n,
          your monthly payment will be m, with monthly interes rate of j%
          your total will be: m * 12
          Ask if everything seems right
