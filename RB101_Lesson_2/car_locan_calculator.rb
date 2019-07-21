@@ -90,27 +90,30 @@ def ask_summ
       CURRENT_CONFIG['apr'] = CURRENT_CONFIG['tarif']['apr']
       break
     else
-      puts "We are sorry, #{CURRENT_CONFIG['name']}, this summ is not aviable on chosen tarif."
+      puts "We are sorry, #{CURRENT_CONFIG['name']}, this summ is not aviable right now for you."
       sleep 3
       correct_tarif= {}
-      TARIFS.each{|t| correct_tarif = t if (t['max_loan'].to_f >=loan.to_f) && (t['min_loan'].to_f <= loan.to_f)}
-      if correct_tarif
+      TARIFS.each {|t| correct_tarif = t[1] if t[1]['max_loan'] >=loan && t[1]['min_loan'] <= loan}
+      if correct_tarif && !correct_tarif.empty?
         puts "But it is aviable on this terms:"
         puts correct_tarif
         sleep 3
         puts "Do you wish to take this sum with new tariff?"
         input = gets.chomp.downcase
         if input.start_with?("y")
+          CURRENT_CONFIG['tarif'] = correct_tarif
           CURRENT_CONFIG["loan"] = loan
-          CURRENT_CONFIG['apr'] = correct_tarif['tarif']['apr']
           break
         else
           puts PROMTS['help']
           break
         end
       else
-        puts "Sorry, we do not loan such summs"
-        break
+        puts "We do not loan such summs"
+        sleep 3
+        puts "Please consult aviable tarifs:"
+        sleep 1.5
+        list_tarifs
       end
     end
   end
@@ -123,7 +126,25 @@ def process_loan
   CURRENT_CONFIG[method] = value
   CURRENT_CONFIG['tarif'] = select_tarifs
   ask_summ
-
+  loan = CURRENT_CONFIG['loan']
+  duration = CURRENT_CONFIG['tarif']['max_duration']*12
+  apr = CURRENT_CONFIG['tarif']['apr']
+  monthly_interest_rate = apr / 12
+  monthly_cash = loan / 12
+  monthly_interest_cash = monthly_interest_rate * monthly_cash
+  monthly_total_cash = loan * (monthly_interest_rate / (1 - (1 + monthly_interest_rate)**(-duration)))
+  puts "Congratularions! You were granted #{loan.round(2)}$ loan!"
+  puts "For #{duration.to_i} months and #{ (apr * 100).round(2)}% APR"
+  puts "Which will be #{(monthly_interest_rate * 100).round(2)}% (#{monthly_interest_cash.round(2)}$) interest per month."
+  puts "Which result in #{(loan * apr).round(2)}$ of interest,"
+  sleep 2
+  puts "For total of #{(loan + (loan * apr)).round(2)}$."
+  sleep 0.5
+  puts "You can choose to close loan earlier, but with max duration for this tarif it will take"
+  puts "#{duration.to_i} months of #{monthly_total_cash.round(2)}$ per month."
+  sleep 0.5
+  puts "Do not miss your payments, #{CURRENT_CONFIG["name"]}, and have a good day!"
+  true
 end
 
 def resque_user(input)
