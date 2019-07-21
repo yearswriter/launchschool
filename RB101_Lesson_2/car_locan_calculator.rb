@@ -81,17 +81,49 @@ def select_tarifs
   return tarif
 end
 
+def ask_summ
+  loop do
+    puts "#{CURRENT_CONFIG['name']}, please, enter your desireable loan summ:"
+    loan = gets.chomp.to_f
+    if  loan <= CURRENT_CONFIG['tarif']['max_loan'] && loan >= CURRENT_CONFIG['tarif']['min_loan']
+      CURRENT_CONFIG['loan'] = loan
+      CURRENT_CONFIG['apr'] = CURRENT_CONFIG['tarif']['apr']
+      break
+    else
+      puts "We are sorry, #{CURRENT_CONFIG['name']}, this summ is not aviable on chosen tarif."
+      sleep 3
+      correct_tarif= {}
+      TARIFS.each{|t| correct_tarif = t if (t['max_loan'].to_f >=loan.to_f) && (t['min_loan'].to_f <= loan.to_f)}
+      if correct_tarif
+        puts "But it is aviable on this terms:"
+        puts correct_tarif
+        sleep 3
+        puts "Do you wish to take this sum with new tariff?"
+        input = gets.chomp.downcase
+        if input.start_with?("y")
+          CURRENT_CONFIG["loan"] = loan
+          CURRENT_CONFIG['apr'] = correct_tarif['tarif']['apr']
+          break
+        else
+          puts PROMTS['help']
+          break
+        end
+      else
+        puts "Sorry, we do not loan such summs"
+        break
+      end
+    end
+  end
+  false
+end
+
 def process_loan
   CURRENT_CONFIG['name'] = ask_name
   method,value = enter_id
   CURRENT_CONFIG[method] = value
   CURRENT_CONFIG['tarif'] = select_tarifs
-  puts "#{CURRENT_CONFIG['name']}, please, enter your desireable loan summ:"
-  loan = gets.chomp.to_f
-  if  loan <= CURRENT_CONFIG['tarif']['max_loan'] && loan >= CURRENT_CONFIG['tarif']['min_loan']
-    CURRENT_CONFIG['loan'] = loan
-    CURRENT_CONFIG['apr'] = CURRENT_CONFIG['tarif']['apr']
-  end
+  ask_summ
+
 end
 
 def resque_user(input)
@@ -114,7 +146,7 @@ end
 puts PROMTS['hi']
 puts PROMTS['help']
 loop do # main loop
-  input = gets.chomp
+  input = gets.chomp.downcase
   break if resque_user(input)
 end
 
