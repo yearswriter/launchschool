@@ -1,10 +1,13 @@
 CHOOSE = %w(rock paper scissors lizard spock)
 
-ROCK_BEATS     = %w(scissors lizard)
-PAPER_BEATS    = %w(rock spock)
-SCISSORS_BEATS = %w(paper lizard)
-LIZARD_BEATS   = %w(paper spock)
-SPOCK_BEATS    = %w(scissors rock)
+WIN_TABLE = {
+  rock: ['scissors', 'lizard'],
+  paper: ['rock', 'spock'],
+  scissors: ['paper', 'lizard'],
+  lizard: ['paper', 'spock'],
+  spock: ['scissors', 'rock']
+}
+
 score_board = { first_player: 0, second_player: 0 }
 
 def humanized_choice_array
@@ -48,15 +51,7 @@ end
 def game_result(player_a, player_b)
   if player_a == player_b
     "Draw"
-  elsif player_a == 'rock' && ROCK_BEATS.include?(player_b)
-    "First player won!"
-  elsif player_a == 'paper' && PAPER_BEATS.include?(player_b)
-    "First player won!"
-  elsif player_a == 'scissors' && SCISSORS_BEATS.include?(player_b)
-    "First player won!"
-  elsif player_a == 'lizard' && LIZARD_BEATS.include?(player_b)
-    "First player won!"
-  elsif player_a == 'spock' && SPOCK_BEATS.include?(player_b)
+  elsif WIN_TABLE[player_a.to_sym].include?(player_b)
     "First player won!"
   else
     "Second player won!"
