@@ -1,5 +1,12 @@
 CHOOSE = ['rock', 'scissors', 'paper']
 
+def humanized_choice_array
+  choices = CHOOSE.map do |c|
+    c.chars.unshift('(').insert(2,')').join
+  end
+  choices.join(', ')
+end
+
 def validate(choice)
   validated_choice = CHOOSE.find do |x|
     x.start_with?(choice[/^[A-z]/] || x == choice)
@@ -12,7 +19,7 @@ def validate(choice)
 end
 
 def promt_for_choice
-  print "Choose (r)ock, (p)aper or (s)cissors: "
+  print "Choose #{humanized_choice_array()}: "
   choice = gets.chomp.downcase
   validate(choice)
 end
