@@ -1,4 +1,4 @@
-CHOOSE = ['rock', 'scissors', 'paper']
+CHOOSE = %w(rock paper scissors)
 
 def humanized_choice_array
   choices = CHOOSE.map do |c|
