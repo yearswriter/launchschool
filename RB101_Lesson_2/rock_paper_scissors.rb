@@ -8,6 +8,10 @@ def humanized_choice_array
 end
 
 def validate(choice)
+  if choice.empty?
+    print "Empty input!"
+    return promt_for_choice
+  end
   validated_choice = CHOOSE.find do |x|
     x.start_with?(choice[/^[A-z]/] || x == choice)
   end
@@ -28,7 +32,7 @@ def make_choice
   CHOOSE.sample
 end
 
-def winner_message(player_a, player_b)
+def game_result(player_a, player_b)
   a_weight = CHOOSE.index(player_a)
   b_weight = CHOOSE.index(player_b)
   if a_weight == b_weight
@@ -45,7 +49,7 @@ loop do
   pc = make_choice
   puts "First player chooses: " + human
   puts "Second player chooses: " + pc
-  puts winner_message(human, pc)
+  puts game_result(human, pc)
   puts "Do you want to play again?"
   answer = gets.chomp.downcase
   break unless answer.start_with?('y')
