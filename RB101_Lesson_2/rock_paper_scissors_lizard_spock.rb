@@ -1,4 +1,11 @@
-CHOOSE = %w(rock scissors paper lizard spock)
+CHOOSE = %w(rock paper scissors lizard spock)
+
+ROCK_BEATS     = %w(scissors lizard)
+PAPER_BEATS    = %w(rock spock)
+SCISSORS_BEATS = %w(paper lizard)
+LIZARD_BEATS   = %w(paper spock)
+SPOCK_BEATS    = %w(scissors rock)
+score_board = { first_player: 0, second_player: 0 }
 
 def humanized_choice_array
   choices = CHOOSE.map do |c|
@@ -39,11 +46,17 @@ def make_choice
 end
 
 def game_result(player_a, player_b)
-  a_weight = CHOOSE.index(player_a)
-  b_weight = CHOOSE.index(player_b)
-  if a_weight == b_weight
+  if player_a == player_b
     "Draw"
-  elsif a_weight == b_weight - 1
+  elsif player_a == 'rock' && ROCK_BEATS.include?(player_b)
+    "First player won!"
+  elsif player_a == 'paper' && PAPER_BEATS.include?(player_b)
+    "First player won!"
+  elsif player_a == 'scissors' && SCISSORS_BEATS.include?(player_b)
+    "First player won!"
+  elsif player_a == 'lizard' && LIZARD_BEATS.include?(player_b)
+    "First player won!"
+  elsif player_a == 'spock' && SPOCK_BEATS.include?(player_b)
     "First player won!"
   else
     "Second player won!"
@@ -55,7 +68,16 @@ loop do
   pc = make_choice
   puts "First player chooses: " + human
   puts "Second player chooses: " + pc
-  puts game_result(human, pc)
+  result = game_result(human, pc)
+  if result == "First player won!"
+    score_board[:first_player] += 1
+  elsif result == "Second player won!"
+    score_board[:second_player] += 1
+  else
+    score_board.transform_values! { |score| score + 1 }
+  end
+  puts result
+  score_board.each { |p, s| puts "For #{p} score is: #{s}" }
   puts "Do you want to play again?"
   answer = gets.chomp.downcase
   break unless answer.start_with?('y')

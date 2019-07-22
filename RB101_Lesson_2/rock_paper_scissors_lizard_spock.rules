@@ -1,0 +1,27 @@
+Rock: beats Scissors, Lizard
+
+Lizard: beats Paper,Spock
+
+Spock: beats Scissors, Rock
+
+Scissors: beats Paper, Lizard
+
+Paper: beats Rock , Spock
+
+(a,b)
+
+case A
+when A==B
+draw
+when A==Rock
+if B == (Scissors || Lizard)
+A win
+else
+B win
+  
+  
+ROCK_BEATS     = %w(scissors lizard)
+PAPER_BEATS    = %w(rock spock)
+SCISSORS_BEATS = %w(paper lizard)
+LIZARD_BEATS   = %w(paper spock)
+SPOCK_BEATS    = %w(scissors rock)
