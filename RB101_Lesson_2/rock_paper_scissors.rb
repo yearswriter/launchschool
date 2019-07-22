@@ -28,9 +28,7 @@ def make_choice
   CHOOSE.sample
 end
 
-def show_winner(player_a, player_b)
-  puts "First player chooses: " + player_a
-  puts "Second player chooses: " + player_b
+def winner_message(player_a, player_b)
   a_weight = CHOOSE.index(player_a)
   b_weight = CHOOSE.index(player_b)
   if a_weight == b_weight
@@ -45,8 +43,12 @@ end
 loop do
   human = promt_for_choice
   pc = make_choice
-  puts show_winner(human, pc)
+  puts "First player chooses: " + human
+  puts "Second player chooses: " + pc
+  puts winner_message(human, pc)
   puts "Do you want to play again?"
   answer = gets.chomp.downcase
   break unless answer.start_with?('y')
 end
+
+puts "Goodbye!"
