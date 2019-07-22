@@ -2,7 +2,7 @@ CHOOSE = ['rock', 'scissors', 'paper']
 
 def humanized_choice_array
   choices = CHOOSE.map do |c|
-    c.chars.unshift('(').insert(2,')').join
+    c.chars.unshift('(').insert(2, ')').join
   end
   choices.join(', ')
 end
