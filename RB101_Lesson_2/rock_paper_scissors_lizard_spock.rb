@@ -1,8 +1,14 @@
-CHOOSE = %w(rock scissors paper)
+CHOOSE = %w(rock scissors paper lizard spock)
 
 def humanized_choice_array
   choices = CHOOSE.map do |c|
-    c.chars.unshift('(').insert(2, ')').join
+    result = c.chars.unshift('(')
+    if c.start_with?('sp')
+      result.insert(3, ')')
+    else
+      result.insert(2, ')')
+    end
+    result.join
   end
   choices.join(', ')
 end
@@ -13,7 +19,7 @@ def validate(choice)
     return promt_for_choice
   end
   validated_choice = CHOOSE.find do |x|
-    x.start_with?(choice[/^[A-z]/] || x == choice)
+    x.start_with?(x == choice || choice[/(^[A-z]{2})|(^[A-z])/])
   end
   if validated_choice.nil?
     print "Wrong input! "
