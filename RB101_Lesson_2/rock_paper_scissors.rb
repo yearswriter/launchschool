@@ -42,7 +42,11 @@ def show_winner(player_a, player_b)
   end
 end
 
-human = promt_for_choice
-pc = make_choice
-
-puts show_winner(human, pc)
+loop do
+  human = promt_for_choice
+  pc = make_choice
+  puts show_winner(human, pc)
+  puts "Do you want to play again?"
+  answer = gets.chomp.downcase
+  breake unless answer.start_with?('y')
+end
