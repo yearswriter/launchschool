@@ -48,5 +48,5 @@ loop do
   puts show_winner(human, pc)
   puts "Do you want to play again?"
   answer = gets.chomp.downcase
-  breake unless answer.start_with?('y')
+  break unless answer.start_with?('y')
 end
