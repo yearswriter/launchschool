@@ -18,7 +18,7 @@ def promt_for_choice
 end
 
 def make_choice
-  CHOOSE[rand(2)]
+  CHOOSE.sample
 end
 
 def show_winner(player_a, player_b)
