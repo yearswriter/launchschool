@@ -29,7 +29,7 @@ def validate(choice)
     return promt_for_choice
   end
   validated_choice = CHOOSE.find do |x|
-    x.start_with?(x == choice || choice[/(^[A-z]{2})|(^[A-z])/])
+    x.start_with?(x == choice || choice[/(^[a-zA-Z]{2})|(^[a-zA-Z])/])
   end
   if validated_choice.nil?
     print "Wrong input! "
