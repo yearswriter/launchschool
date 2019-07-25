@@ -32,7 +32,7 @@ rescue => er
 end
 
 hsh = { :a => 1, 'b' => 'two', :c => nil }
-
+er = nil
 begin
   p hsh['b']       # => "two"
   p hsh[:c]        # => nil
@@ -87,3 +87,46 @@ hsh[:carrot] = 'Vegetable'
 hsh[:pear] = 'Fruit'
 hsh[:broccoli] = 'Vegetable'
 hsh # => { :apple => "Fruit", :carrot => "Vegetable", :pear => "Fruit", :broccoli => "Vegetable" }
+
+loop do
+  number = rand(1..10)   # a random number between 1 and 10
+  puts 'Hello!'
+  if number == 5
+    puts 'Exiting...'
+    break
+  end
+end
+
+alphabet = 'abcdefghijklmnopqrstuvwxyz'
+counter = 0
+
+loop do
+  break if counter >= alphabet.size
+  puts alphabet[counter]
+  counter += 1
+end
+p counter
+objects = ['hello', :key, 10, [], nil, {}, 2.32, puts, loop, true, false, er, eval('nil'),eval('[]')]
+counter = 0
+
+loop do
+  break if counter == objects.size
+  puts objects[counter].class
+  counter += 1
+end
+
+number_of_pets = {
+  'dogs' => 2,
+  'cats' => 4,
+  'fish' => 1
+}
+pets = number_of_pets.keys # => ['dogs', 'cats', 'fish']
+counter = 0
+
+loop do
+  break if counter == number_of_pets.size
+  current_pet = pets[counter]
+  current_pet_number = number_of_pets[current_pet]
+  puts "I have #{current_pet_number} #{current_pet}!"
+  counter += 1
+end
