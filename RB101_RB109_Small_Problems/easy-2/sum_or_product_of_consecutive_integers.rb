@@ -1,13 +1,9 @@
 def compute_sum(number)
-  total = 0
-  1.upto(number) { |value| total += value }
-  total
+  1.upto(number).inject(:+)
 end
 
 def compute_product(number)
-  total = 1
-  1.upto(number) { |value| total *= value }
-  total
+  1.upto(number).inject(:*)
 end
 
 puts ">> Please enter an integer greater than 0"
