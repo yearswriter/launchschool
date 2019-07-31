@@ -1,0 +1,91 @@
+
+    What is the type of action being performed (method call, block, conditional, etc..)?
+    What is the object that action is being performed on?
+    What is the side-effect of that action (e.g. output or destructive action)?
+    What is the return value of that action?
+    Is the return value used by whatever instigated the action?
+=================================
+1>|[[1, 2], [3, 4]].each do |arr|
+2>|  puts arr.first
+3>|end
+4>|# 1
+5>|# 3
+6>|# => [[1, 2], [3, 4]]
+=======================================================================
+Line| Action             | Object                         | Side Effect
+=======================================================================
+1   | method call (each) | The outer array                | None
+1-3 | block execution    | Each sub-array                 | None
+2   | method call (first)| Each sub-array                 | None
+2   | method call (puts) | Element at index 0 of sub-array| Outputs string representation of an Integer
+
+======================================================
+Return Value                   | Is Return Value Used?
+======================================================
+The calling object             | No, but shown on line 6
+nil                            | No
+Element at index 0 of sub-array| Yes, used by puts
+nil                            | Yes, used to determine return value of block
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+================================
+1>|[[1, 2], [3, 4]].map do |arr|
+2>|  puts arr.first
+3>|  arr.first
+4>|end
+=======================================================================
+Line| Action             | Object                         | Side Effect
+=======================================================================
+1   | method call (map)  | The outer array                | None
+1-4 | block execution    | Each sub-array                 | None
+2   | method call (first)| Each sub-array                 | None
+2   | method call (puts) | Element at index 0 of sub-array| Outputs string representation of an Integer
+3   | method call (first)| Element at index 0 of sub-array| written as the value of current sub-array in the return object
+
+======================================================
+Return Value                   | Is Return Value Used?
+======================================================
+result of the block action     | No
+arr.first                      | Yes, in block return value
+Element at index 0 of sub-array| Yes, used by puts
+nil                            | No
+transformed array              | Yes, used to determine return value of block
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+============================================
+1>|my_arr = [[18, 7], [3, 12]].each do |arr|
+2>|  arr.each do |num|
+3>|    if num > 5
+4>|      puts num
+5>|    end
+6>|  end
+7>|end
+=====================================================================================
+Line| Action                      | Object                              | Side Effect
+=====================================================================================
+1   | method call (outer each)    | The outer array                     | None
+1   | variable assignment         | The return value of method(each)    | None
+1-7 | block execution (outer each)| Each sub-array                      | None
+2   | method call (inner each)    | Each sub-array                      | None
+2-6 | block execution (inner each)| Each element of sub-array           | None
+3   | conditional construct 'if'  | Result of the conditional statement | statement block executing only if returns true
+3   | conditional statement       | Each element of each sub-array      | None
+3-5 | statement block             | Each element of each sub-array      | None
+4   | method call (puts)          | Each element of each sub-array if conditional statement returns true| Outputs string representation of an Integer
+
+======================================================
+Line| Return Value                   | Is Return Value Used?
+======================================================
+1   | The calling object             | Yes, in variable assignment
+1   | The calling object             | No
+1-7 | The calling object             | No
+2   | The calling objects            | Yes, used to determine return value of outer block
+2-6 | The calling objects            | No
+3   | nil                            | Yes, used to determine return value of inner block
+3   | true if current element >5     | Yes, used to determine if we need to execute conditional statement block or not
+3-5 | nil                            | No
+4   | nil                            | Yes, used to determine return value of inner block
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

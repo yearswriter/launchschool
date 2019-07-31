@@ -14,12 +14,12 @@ def division_stringified(num1, num2)
 end
 #---
 def division_stringified(num1, num2)
+  return 'Cannot divide by 0' if num2.zero?
+
   div_str_array = (num1 / num2.to_f).round(0).to_s.chars.reverse
 
   div_str_array.each_with_index do |char, i|
     char << ',' if (i) % 3 == 0 && !i.zero?
-
-    end
   end
   div_str_array.reverse.join
 end
