@@ -84,12 +84,45 @@ hsh = {first: ['the', 'quick'], second: ['brown', 'fox'], third: ['jumped'], fou
 
 vowels = 'aeiou'
 
-hsh.each do |_, value|
+hsh.each_value do |value|
   value.each do |str|
     str.chars.each do |char|
-      puts char if vowels.include?(char)
+      print char if vowels.include?(char)
     end
   end
 end
-
+puts
 arr = [['b', 'c', 'a'], [2, 1, 3], ['blue', 'black', 'green']]
+arr.each do |sub_array|
+  sub_array.sort! {|a,b| b<=>a}
+end
+p arr
+
+res = []
+[{a: 1}, {b: 2, c: 3}, {d: 4, e: 5, f: 6}].map do |sub_hash|
+  newhsh = {}
+  sub_hash.each do |k,v|
+    newhsh[k] = v + 1
+  end
+  res.push(newhsh)
+end
+p res
+arr = [[2], [3, 5, 7], [9], [11, 13, 15]]
+arr.map! do |sub_arr|
+  sub_arr.select{|el| el % 3 == 0}
+end
+p arr
+
+arr = [[:a, 1], ['b', 'two'], ['sea', {c: 3}], [{a: 1, b: 2, c: 3, d: 4}, 'D']]
+p arr.to_h
+hsh = {}
+arr.each do |item|
+  hsh[item[0]] = item[1]
+end
+p hsh
+arr = [[1, 6, 7], [1, 4, 9], [1, 8, 3]]
+arr.sort_by do |sub_arr|
+  sub_arr.select do |num|
+    num.odd?
+  end
+end
