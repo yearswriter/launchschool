@@ -126,3 +126,65 @@ arr.sort_by do |sub_arr|
     num.odd?
   end
 end
+
+hsh = {
+  'grape' => {type: 'fruit', colors: ['red', 'green'], size: 'small'},
+  'carrot' => {type: 'vegetable', colors: ['orange'], size: 'medium'},
+  'apple' => {type: 'fruit', colors: ['red', 'green'], size: 'medium'},
+  'apricot' => {type: 'fruit', colors: ['orange'], size: 'medium'},
+  'marrow' => {type: 'vegetable', colors: ['green'], size: 'large'},
+}
+
+r = hsh.map do |_, value|
+  if value[:type] == 'fruit'
+    value[:colors].map do |color|
+      color.capitalize
+    end
+  elsif value[:type] == 'vegetable'
+    value[:size].upcase
+  end
+end
+
+p r
+
+arr = [{a: [1, 2, 3]}, {b: [2, 4, 6], c: [3, 6], d: [4]}, {e: [8], f: [6, 10]}]
+
+r = arr.map do |hash|
+  hash.map do |_,internal_array|
+    internal_array.select { |el| el.odd? }
+  end
+end
+
+p r
+r = arr.map do |hash|
+  hash.each_value do |internal_array|
+    internal_array.select! { |el| el.even? }
+  end
+end
+
+p r
+arr.select do |hsh| #select all hashes on which hsh.all? returns true
+  hsh.all? do |_, value| #select all internal_array on which value.all returns true
+    value.all? do |num| #select all elements of internal_array on which num.even? returns true
+      num.even? #returns true if number is even
+    end
+  end
+end
+p r
+
+def generate_UUID
+  characters = []                                  # array of possible characters
+  (0..9).each { |digit| characters << digit.to_s } # generation of possible numbers
+  ('a'..'f').each { |digit| characters << digit }  # generation of possible characters (for base 16)
+
+  uuid = ""
+  sections = [8, 4, 4, 4, 12] # array of string format (how many base 16 numbers before breaking them with '-')
+  sections.each_with_index do |section, index|
+    section.times { uuid += characters.sample }
+    uuid += '-' unless index >= sections.size - 1
+  end
+
+  uuid
+end
+
+p generate_UUID
