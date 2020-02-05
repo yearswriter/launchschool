@@ -1,4 +1,5 @@
 require 'yaml'
+require 'pry'
 CONFIG = YAML.load_file('./config.yml')
 
 def draw_on_tiles(tiles, row='mid', col='mid', value = ' ')
@@ -23,24 +24,32 @@ end
 def winner_col(board,cur_player)
   board.map do |row,index|
   end
+  return false
 end
 
+def winner_diag(board,cur_player)
+  return false
+end
+
+def winner?(board,cur_player)
+  winner_row(board,cur_player) || winner_col(board,cur_player) || winner_diag(board,cur_player)
+end
 def turn(player,tiles,board)
   loop do
     system "cls"
-    puts "|>Input Player##{player} turn: row,col (left\\right\\top\\bot\\mid)|"
+    puts "|> Input Player##{player} turn: row,col (left\\right\\top\\bot\\mid)|"
     puts tiles
     answer = gets.chomp.split(' ')
     fill_board(player,answer[0],answer[1],board)
     if player == 1
       draw_on_tiles(tiles,answer[0],answer[1],'X')
       puts tiles
-      puts board
+  return player if winner_row(board,player)
       player = 2
     else
       draw_on_tiles(tiles,answer[0],answer[1],'O')
       puts tiles
-      puts board
+  return player if winner_row(board,player)
       player = 1
     end
   rescue StandardError => e
@@ -53,7 +62,10 @@ loop do
   tiles = CONFIG["tiles"].lines
   board =  CONFIG["state"]["board"]
   player = 1
-  turn(player,tiles,board)
+  winner = turn(player,tiles,board)
+  system "cls"
+  puts "Player##{winner} won!"
+  puts tiles
   puts '|another game?|(y\n)'
   return unless gets.chomp == 'y'
 end
