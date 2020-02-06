@@ -5,14 +5,25 @@ CONFIG = YAML.load_file('./config.yml')
 def draw_on_tiles(tiles, row='mid', col='mid', value = ' ')
   row = CONFIG["state"]["tiles"]["rows"][row][0]
   col = CONFIG["state"]["tiles"]["cols"][col][0]
-  tiles[row][col] = value
-  return tiles
+  if tiles[row][col] == ' '
+    tiles[row][col] = value
+    return tiles
+  else
+    puts "ERROR! Tile is already taken"
+    return false
+  end
 end
 
 def fill_board(player,row,col,board)
   row = CONFIG["state"]["tiles"]["rows"][row][1]
   col = CONFIG["state"]["tiles"]["cols"][col][1]
-  board[row][col]=player
+  if board[row][col] == 0
+    board[row][col] = player
+    return board
+  else
+    puts "ERROR! Tile is already taken"
+    return false
+  end
 end
 
 def winner_row(board,cur_player)
@@ -21,19 +32,16 @@ def winner_row(board,cur_player)
   end.include?(cur_player)
 end
 
-def winner_col(board,cur_player)
-  board.map do |row,index|
-  end
+def winner_col(board, cur_player)
   return false
 end
 
-def winner_diag(board,cur_player)
-  return false
-end
+
 
 def winner?(board,cur_player)
-  winner_row(board,cur_player) || winner_col(board,cur_player) || winner_diag(board,cur_player)
+  winner_row(board,cur_player) || winner_col(board)
 end
+
 def turn(player,tiles,board)
   loop do
     system "cls"
