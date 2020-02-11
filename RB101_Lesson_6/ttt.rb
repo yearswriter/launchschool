@@ -27,7 +27,7 @@ def empty?(board, row, col)
   col = CONFIG['address_table']['cols'][col][1]
   tileset = board['tileset']
   player_turns = board['player_turns']
-  tileset[trow][tcol].eql?(' ') & game_turns[row][col].zero?
+  tileset[trow][tcol].eql?(' ') & player_turns[row][col].zero?
 end
 
 # Checking if there any empty places on whole board
@@ -65,13 +65,18 @@ def win?(board, player)
 end
 
 # A standart turn method
-def turn(board, player)
+def turn!(board, player)
   system 'cls'
   puts "|> Input Player##{player} turn: row,col (left\\right\\top\\bot\\mid)|"
   puts board['tileset']
   answer = gets.chomp
-  return false unless answer.match?(/([top|bot] [left|right])|mid/)
+
+  # input checks
+  return 'Wrong input' unless answer.match?(/([top|bot] [left|right])|mid/)
   answer = answer.split(' ')
+  return 'Cell is taken' unless empty?(board, answer[0], answer[1])
+  #-------------------
+  # actual turn
   case player
   when 1
     draw_tile!(board, answer[0], answer[1], 'X')
@@ -80,22 +85,26 @@ def turn(board, player)
     draw_tile!(board, answer[0], answer[1], 'O')
     puts board['tileset']
   else
-    return false
+    return 'No such player ID'
   end
   fill_turn!(board, answer[0], answer[1], player)
+  #-------------
+  # win condition checks
+  if win?(board, player)
+    return player
+  elsif untill_end?(board).nil?
+    return 'Draw'
+  end
+  #---------------------
 end
 
 # main game loop
 loop do
   board =  CONFIG['board']
   winner = [1,2].cycle { |player|
-    if turn(board, player)
-      return player
-    else
-      return false
-    end
+  turn!(board, player)
+  # just check return of the method with all the CASES 
   }
-
   system 'cls'
   puts "Player##{winner} won!"
   puts board['tileset']
