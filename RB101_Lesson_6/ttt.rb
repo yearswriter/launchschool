@@ -1,5 +1,5 @@
 require 'yaml'
-
+require 'pry'
 # Drawing method + loading default tileset from config
 def draw_tile!(board, row, col, value)
   row = CONFIG['address_table']['rows'][row][0]
@@ -55,26 +55,28 @@ end
 
 # searching for winner diagonals
 def winner_dgnls?(board, player)
-  lr = board['player_turns'].eql?([[player, 0, 0],
-                                   [0, player, 0],
-                                   [0, 0, player]])
-
-  rl = board['player_turns'].eql?([
-                                    [0, 0, player],
-                                    [0, player, 0],
-                                    [player, 0, 0]
-                                  ])
-
+  lr = board['player_turns'].to_s.match?(
+  /^\[\[#{player}, \d, \d\], \[\d, #{player}, \d\], \[\d, \d, #{player}\]\]$/
+  )
+  rl = board['player_turns'].to_s.match?(
+  /^\[\[\d, \d, #{player}\], \[\d, #{player}, \d\], \[#{player}, \d, \d\]\]$/
+  )
   lr || rl
 end
 
-# ^ probably most readable and straight forward way to check win
-# Conditions, but included all others methods just for training
-# general win method
 def win?(board, player)
-  lines = winner_lines?(board, player)
-  dgnl = winner_dgnls?(board, player)
-  lines || dgnl
+  winner_lines?(board, player) || winner_dgnls?(board, player)
+end
+
+def computer_turn!(board, player)
+  row = CONFIG['address_table']['rows'].keys.sample
+  col = CONFIG['address_table']['cols'].keys.sample
+  until empty?(board, row, col)
+    row = CONFIG['address_table']['rows'].keys.sample
+    col = CONFIG['address_table']['cols'].keys.sample
+  end
+  fill_turn!(board, row, col, player)
+  draw_tile!(board, row, col, 'O')
 end
 
 # A standart turn method
@@ -83,27 +85,28 @@ def turn!(board, player)
   puts "|> Input Player##{player} turn: '|> row col' (left\\right\\top\\bot\\mid)"
   puts board['tileset']
   print "|> "
-  answer = gets.chomp
-  answer = answer.split(' ')
-  # input checks
-  return 'Wrong input' if answer.empty?
-  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
-  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-  return 'Cell is taken' unless empty?(board, answer[0], answer[1])
 
   # actual turn
   case player
   when 1
+    answer = gets.chomp
+    answer = answer.split(' ')
+    # input checks
+    return 'Wrong input' if answer.empty?
+    return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
+    return 'Wrong input' unless answer[1].match?(/left|right|mid/)
+    return 'Cell is taken' unless empty?(board, answer[0], answer[1])
     draw_tile!(board, answer[0], answer[1], 'X')
-    puts board['tileset']
+    fill_turn!(board, answer[0], answer[1], player)
   when 2
-    draw_tile!(board, answer[0], answer[1], 'O')
-    puts board['tileset']
+    #draw_tile!(board, answer[0], answer[1], 'O')
+    #puts board['tileset']
+    computer_turn!(board, player)
   else
     return 'No such player ID'
   end
-  fill_turn!(board, answer[0], answer[1], player)
   #-------------
+  puts board['tileset']
   # win condition checks
   if win?(board, player)
     return player
