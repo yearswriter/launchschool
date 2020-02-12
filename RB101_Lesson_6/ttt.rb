@@ -53,15 +53,17 @@ end
 
 # searching for winner diagonals
 def winner_dgnls?(board, player)
-  lr = board['player_turns'].flatten.eql?([player,0,0,0,player,0,0,0,player])
-  rl = board['player_turns'].flatten.eql?([0,0,player,0,player,0,player,0,0])
+  lr = board['player_turns'].eql?([[player,0,0],[0,player,0],[0,0,player]])
+  rl = board['player_turns'].eql?([[0,0,player],[0,player,0],[player,0,0]])
   lr || rl
 end
 # ^ probably most readable and straight forward way to check win
 # Conditions, but included all others methods just for training
 # general win method
 def win?(board, player)
-  winner_lines?(board, player) || winner_dgnls?(board,player)
+  lines = winner_lines?(board, player)
+  dgnl = winner_dgnls?(board, player)
+  lines || dgnl
 end
 
 # A standart turn method
@@ -73,7 +75,8 @@ def turn!(board, player)
   answer = gets.chomp
 
   # input checks
-  return 'Wrong input' unless answer.match?(/([top|bot] [left|right])|mid/)
+  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
+  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
   answer = answer.split(' ')
   return 'Cell is taken' unless empty?(board, answer[0], answer[1])
   #-------------------
