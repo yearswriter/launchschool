@@ -126,7 +126,7 @@ loop do
   game = [1, 2]
   system 'cls'
   puts 'player sign is an "X"'
-  puts 'Choose you first or second:'
+  puts 'Choose you go first or second:'
   puts '1 or 2'
   case gets.chomp
   when '1'
