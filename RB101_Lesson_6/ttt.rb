@@ -68,7 +68,7 @@ def win?(board, player)
   winner_lines?(board, player) || winner_dgnls?(board, player)
 end
 
-def computer_turn!(board, player)
+def computer_turn!(board, player, sign)
   row = CONFIG['address_table']['rows'].keys.sample
   col = CONFIG['address_table']['cols'].keys.sample
   until empty?(board, row, col)
@@ -76,7 +76,20 @@ def computer_turn!(board, player)
     col = CONFIG['address_table']['cols'].keys.sample
   end
   fill_turn!(board, row, col, player)
-  draw_tile!(board, row, col, 'O')
+  draw_tile!(board, row, col, sign)
+end
+
+def human_turn!(board, player, sign)
+  answer = gets.chomp
+  answer = answer.split(' ')
+  # input checks
+  return 'Wrong input' if answer.empty?
+  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
+  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
+  return 'Cell is taken' unless empty?(board, answer[0], answer[1])
+
+  fill_turn!(board, answer[0], answer[1], player)
+  draw_tile!(board, answer[0], answer[1], sign)
 end
 
 # A standart turn method
@@ -89,20 +102,9 @@ def turn!(board, player)
   # actual turn
   case player
   when 1
-    answer = gets.chomp
-    answer = answer.split(' ')
-    # input checks
-    return 'Wrong input' if answer.empty?
-    return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
-    return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-    return 'Cell is taken' unless empty?(board, answer[0], answer[1])
-
-    draw_tile!(board, answer[0], answer[1], 'X')
-    fill_turn!(board, answer[0], answer[1], player)
+    human_turn!(board, player, 'X')
   when 2
-    # draw_tile!(board, answer[0], answer[1], 'O')
-    # puts board['tileset']
-    computer_turn!(board, player)
+    computer_turn!(board, player, 'O')
   else
     return 'No such player ID'
   end
@@ -121,7 +123,20 @@ end
 loop do
   CONFIG = YAML.load_file('./config.yml')
   board =  CONFIG['board']
-  [1, 2].cycle do |player|
+  game = [1, 2]
+  system 'cls'
+  puts 'player sign is an "X"'
+  puts 'Choose you first or second:'
+  puts '1 or 2'
+  case gets.chomp
+  when '1'
+    game = [1, 2]
+  when '2'
+    game = [2, 1]
+  else
+    return puts "Wrong answer"
+  end
+  game.cycle do |player|
     turn = turn!(board, player)
     case turn
     when 'Wrong input'
@@ -134,7 +149,7 @@ loop do
       puts "Player №#{player} WON!"
       break
     when 'Draw'
-      puts 'IT\'S A DRAW'
+      puts 'IT\'S A TIE!'
       break
     end
   end
