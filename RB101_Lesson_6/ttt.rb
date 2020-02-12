@@ -56,10 +56,10 @@ end
 # searching for winner diagonals
 def winner_dgnls?(board, player)
   lr = board['player_turns'].to_s.match?(
-  /^\[\[#{player}, \d, \d\], \[\d, #{player}, \d\], \[\d, \d, #{player}\]\]$/
+    /^\[\[#{player}, \d, \d\], \[\d, #{player}, \d\], \[\d, \d, #{player}\]\]$/
   )
   rl = board['player_turns'].to_s.match?(
-  /^\[\[\d, \d, #{player}\], \[\d, #{player}, \d\], \[#{player}, \d, \d\]\]$/
+    /^\[\[\d, \d, #{player}\], \[\d, #{player}, \d\], \[#{player}, \d, \d\]\]$/
   )
   lr || rl
 end
@@ -96,11 +96,12 @@ def turn!(board, player)
     return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
     return 'Wrong input' unless answer[1].match?(/left|right|mid/)
     return 'Cell is taken' unless empty?(board, answer[0], answer[1])
+
     draw_tile!(board, answer[0], answer[1], 'X')
     fill_turn!(board, answer[0], answer[1], player)
   when 2
-    #draw_tile!(board, answer[0], answer[1], 'O')
-    #puts board['tileset']
+    # draw_tile!(board, answer[0], answer[1], 'O')
+    # puts board['tileset']
     computer_turn!(board, player)
   else
     return 'No such player ID'
