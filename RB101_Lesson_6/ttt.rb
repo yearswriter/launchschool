@@ -107,14 +107,13 @@ loop do
   CONFIG = YAML.load_file('./config.yml')
   board =  CONFIG['board']
   [1,2].cycle { |player|
-  case turn!(board, player)
+  turn = turn!(board, player)
+  case turn
   when 'Wrong input'
     puts 'Wrong input'
-    sleep 1
     redo
   when 'Cell is taken'
     puts 'Cell is taken'
-    sleep 1
     redo
   when 1..2
     puts "Player №#{player} WON!"
