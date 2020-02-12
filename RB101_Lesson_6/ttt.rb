@@ -73,11 +73,11 @@ def turn!(board, player)
   puts board['tileset']
   print "|> "
   answer = gets.chomp
-
+  answer = answer.split(' ')
   # input checks
+  return 'Wrong input' if answer.empty?
   return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
   return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-  answer = answer.split(' ')
   return 'Cell is taken' unless empty?(board, answer[0], answer[1])
   #-------------------
   # actual turn
@@ -110,8 +110,12 @@ loop do
   case turn!(board, player)
   when 'Wrong input'
     puts 'Wrong input'
+    sleep 1
+    redo
   when 'Cell is taken'
     puts 'Cell is taken'
+    sleep 1
+    redo
   when 1..2
     puts "Player №#{player} WON!"
     break
