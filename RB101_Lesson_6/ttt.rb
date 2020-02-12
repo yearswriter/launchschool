@@ -1,5 +1,4 @@
 require 'yaml'
-CONFIG = YAML.load_file('./config.yml')
 
 # Drawing method + loading default tileset from config
 def draw_tile!(board, row, col, value)
@@ -53,12 +52,13 @@ def winner_lines?(board, player)
 end
 
 # searching for winner diagonals
-def winner_dgnls?(board,player)
+def winner_dgnls?(board, player)
   lr = board['player_turns'].flatten.eql?([player,0,0,0,player,0,0,0,player])
   rl = board['player_turns'].flatten.eql?([0,0,player,0,player,0,player,0,0])
   lr || rl
 end
-
+# ^ probably most readable and straight forward way to check win
+# Conditions, but included all others methods just for training
 # general win method
 def win?(board, player)
   winner_lines?(board, player) || winner_dgnls?(board,player)
@@ -67,8 +67,9 @@ end
 # A standart turn method
 def turn!(board, player)
   system 'cls'
-  puts "|> Input Player##{player} turn: row,col (left\\right\\top\\bot\\mid)|"
+  puts "|> Input Player##{player} turn: '|> row col' (left\\right\\top\\bot\\mid)"
   puts board['tileset']
+  print "|> "
   answer = gets.chomp
 
   # input checks
@@ -100,14 +101,23 @@ end
 
 # main game loop
 loop do
+  CONFIG = YAML.load_file('./config.yml')
   board =  CONFIG['board']
-  winner = [1,2].cycle { |player|
-  turn!(board, player)
-  # just check return of the method with all the CASES 
+  [1,2].cycle { |player|
+  case turn!(board, player)
+  when 'Wrong input'
+    puts 'Wrong input'
+  when 'Cell is taken'
+    puts 'Cell is taken'
+  when 1..2
+    puts "Player №#{player} WON!"
+    break
+  when 'Draw'
+    puts 'IT\'S A DRAW'
+    break
+  end
+  # just check return of the method with all the CASES
   }
-  system 'cls'
-  puts "Player##{winner} won!"
-  puts board['tileset']
   puts '|another game?|(y\n)'
   return unless gets.chomp == 'y'
 end
