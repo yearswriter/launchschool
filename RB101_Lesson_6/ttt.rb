@@ -62,13 +62,13 @@ def winner_lines?(board, player)
 
   cols = player_turns.map do |row|
     row.reduce { |acc, val| val if val == acc }
-  end.include?(player)
+  end
 
   rows = player_turns.transpose.map do |row|
     row.reduce { |acc, val| val if val == acc }
-  end.include?(player)
+  end
 
-  cols || rows
+  cols.include?(player) || rows.include?(player)
 end
 
 # searching for winner diagonals
@@ -97,21 +97,34 @@ def computer_turn!(board, player, sign)
   draw_tile!(board, row, col, sign)
 end
 
-# A standart turn method
-# this one is indeed not pretty
-def turn!(board, player)
+# method for displaying status and promt + current board
+def display(tileset, player)
   system 'cls'
-  # I mean it is an OK line
-  puts "|> Input Player##{player} turn: '|> row col' (left\\right\\top\\bot\\mid)"
-
-  puts board['tileset']
-  print "|> "
-
+  puts "
+   => Input Player №#{player} turn:
+          'row col'
+       "
+  puts
+  side = [['     row     '],
+         ['     |||     '],
+       ['-top-mid-bot-']]
+  puts 'col _ left  | mid | right'.rjust(23)
+  tileset.each_with_index do |line, index|
+    line = side[0][0][index] + " " +
+    side[1][0][index] + " " +
+    side[2][0][index] + " " + line
+    puts line.rjust(20)
+  end
+  puts
+  print '   => '
+end
+# A standart turn method
+def turn!(board, player)
+#  display(board, player)
   # actual turn
   case player
   when 1
-    answer = gets.chomp
-    answer = answer.split(' ')
+    answer = gets.chomp.split(' ')
     # input checks
     return 'Wrong input' if answer.empty?
     return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
@@ -125,15 +138,13 @@ def turn!(board, player)
   else
     return 'No such player ID'
   end
-  #-------------
-  puts board['tileset']
   # win condition checks
   if win?(board, player)
     return player
   elsif out_of_turns?(board)
     return 'Tie'
   end
-  #---------------------
+  return board
 end
 
 # main game loop
@@ -141,10 +152,15 @@ loop do
   board = YAML.load_file('./board.yml')
   game = [1, 2]
   system 'cls'
-  puts 'player sign is an "X"'
-  puts 'Choose you go first or second:'
-  puts '1 or 2'
-  case gets.chomp
+  puts '
+   => player sign is an "X"
+            Choose,
+      go first or second:
+            1 or 2
+       '
+  player = gets.chomp
+  display(board['tileset'], player)
+  case player
   when '1'
     game = [1, 2]
   when '2'
@@ -154,12 +170,15 @@ loop do
   end
   game.cycle do |player|
     turn = turn!(board, player)
+    display(board['tileset'], player)
     case turn
     when 'Wrong input'
       puts 'Wrong input'
+      print '=> '.rjust(5)
       redo
     when 'Cell is taken'
       puts 'Cell is taken'
+      print '=> '.rjust(5)
       redo
     when 1..2
       puts "Player №#{player} WON!"
@@ -167,8 +186,10 @@ loop do
     when 'Tie'
       puts 'IT\'S A TIE!'
       break
+    else
+      display(board['tileset'], player)
     end
   end
-  puts '|another game?|(y\n)'
+  puts '=> another game?|(y\n)'.rjust(25)
   return unless gets.chomp == 'y'
 end
