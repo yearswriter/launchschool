@@ -5,14 +5,14 @@ require 'pry'
 # There is a tileset in config (easier to draw), player turns data
 # (easier to analize) and addres table that connects them
 # general data change method
-def change_board_data!(board, row, col, table, value)
+def set_board_data!(board, row, col, table, value)
   case table
   when 'tileset'
     datatype = 0
   when 'player_turns'
     datatype = 1
   else
-    return 'There is no such data about board'
+    return 'There is no such table in a board'
   end
   row = board['rows'][row][datatype]
   col = board['cols'][col][datatype]
@@ -20,31 +20,35 @@ def change_board_data!(board, row, col, table, value)
   board[table]
 end
 
+def get_board_data(board, row, col, table, _value)
+  case table
+  when 'tileset'
+    datatype = 0
+  when 'player_turns'
+    datatype = 1
+  else
+    return 'There is no such table in a board'
+  end
+  row = board['rows'][row][datatype]
+  col = board['cols'][col][datatype]
+  board[table][row][col]
+end
+
 # just a shorthand for this_exact operation (draw tile)
 def draw_tile!(board, row, col, value)
-  change_board_data!(board, row, col, 'tileset', value)
+  set_board_data!(board, row, col, 'tileset', value)
 end
 
 # just a shorthand for this_exact operation (draw tile)
 def fill_turn!(board, row, col, value)
-  change_board_data!(board, row, col, 'player_turns', value)
+  set_board_data!(board, row, col, 'player_turns', value)
 end
 
 # Checking if tile still empty
 def empty?(board, row, col)
-  rows = board['rows']
-  cols = board['cols']
-
-  tileset      = board['tileset']
-  player_turns = board['player_turns']
-
-  trow = rows[row][0]
-  tcol = cols[col][0]
-
-  row = rows[row][1]
-  col = cols[col][1]
-
-  tileset[trow][tcol].eql?(' ') || player_turns[row][col].zero?
+  tile = get_board_data!(board, row, col, 'tileset')
+  turn = get_board_data!(board, row, col, 'player_turns')
+  tile.eql?(' ') || turn.zero?
 end
 
 # Checking if there any empty places on whole board
