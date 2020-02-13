@@ -1,25 +1,39 @@
 require 'yaml'
+require 'pry'
 # Drawing method + loading default tileset from config
-def draw_tile!(board, row, col, value)
-  row = CONFIG['address_table']['rows'][row][0]
-  col = CONFIG['address_table']['cols'][col][0]
-  board['tileset'][row][col] = value
-  board['tileset']
+
+# There is a tileset in config (easier to draw), player turns data
+# (easier to analize) and addres table that connects them
+# general data change method
+def change_board_data!(board, row, col, table, value)
+  case table
+  when 'tileset'
+    datatype = 0
+  when 'player_turns'
+    datatype = 1
+  else
+    return 'There is no such data about board'
+  end
+  row = board['rows'][row][datatype]
+  col = board['cols'][col][datatype]
+  board[table][row][col] = value
+  board[table]
 end
 
-# Filling turn data method + loading default tileset from config
+# just a shorthand for this_exact operation (draw tile)
+def draw_tile!(board, row, col, value)
+  change_board_data!(board, row, col, 'tileset', value)
+end
+
+# just a shorthand for this_exact operation (draw tile)
 def fill_turn!(board, row, col, value)
-  row = CONFIG['address_table']['rows'][row][1]
-  col = CONFIG['address_table']['cols'][col][1]
-  board['player_turns'][row][col] = value
-  board['player_turns']
+  change_board_data!(board, row, col, 'player_turns', value)
 end
 
 # Checking if tile still empty
-# rubocop:disable Metrics/AbcSize
 def empty?(board, row, col)
-  rows = CONFIG['address_table']['rows']
-  cols = CONFIG['address_table']['cols']
+  rows = board['rows']
+  cols = board['cols']
 
   tileset      = board['tileset']
   player_turns = board['player_turns']
@@ -33,10 +47,9 @@ def empty?(board, row, col)
   tileset[trow][tcol].eql?(' ') || player_turns[row][col].zero?
 end
 
-# rubocop:enable Metrics/AbcSize
 # Checking if there any empty places on whole board
-def untill_end?(board)
-  board['player_turns'].flatten.select(&:zero?)
+def out_of_turns?(board)
+  board['player_turns'].flatten.select(&:zero?).empty?
 end
 
 # searching for winner lines
@@ -69,28 +82,24 @@ def win?(board, player)
   winner_lines?(board, player) || winner_dgnls?(board, player)
 end
 
-# rubocop:disable Metrics/AbcSize
 def computer_turn!(board, player, sign)
-  row = CONFIG['address_table']['rows'].keys.sample
-  col = CONFIG['address_table']['cols'].keys.sample
+  row = board['rows'].keys.sample
+  col = board['cols'].keys.sample
   until empty?(board, row, col)
-    row = CONFIG['address_table']['rows'].keys.sample
-    col = CONFIG['address_table']['cols'].keys.sample
+    row = board['rows'].keys.sample
+    col = board['cols'].keys.sample
   end
   fill_turn!(board, row, col, player)
   draw_tile!(board, row, col, sign)
 end
 
-# rubocop:enable Metrics/AbcSize
-
 # A standart turn method
 # this one is indeed not pretty
 def turn!(board, player)
   system 'cls'
-  # rubocop:disable Metrics/LineLength
   # I mean it is an OK line
   puts "|> Input Player##{player} turn: '|> row col' (left\\right\\top\\bot\\mid)"
-  # rubocop:enable Metrics/LineLength
+
   puts board['tileset']
   print "|> "
 
@@ -117,16 +126,15 @@ def turn!(board, player)
   # win condition checks
   if win?(board, player)
     return player
-  elsif untill_end?(board).nil?
-    return 'Draw'
+  elsif out_of_turns?(board)
+    return 'Tie'
   end
   #---------------------
 end
 
 # main game loop
 loop do
-  CONFIG = YAML.load_file('./config.yml')
-  board =  CONFIG['board']
+  board = YAML.load_file('./board.yml')
   game = [1, 2]
   system 'cls'
   puts 'player sign is an "X"'
@@ -152,7 +160,7 @@ loop do
     when 1..2
       puts "Player №#{player} WON!"
       break
-    when 'Draw'
+    when 'Tie'
       puts 'IT\'S A TIE!'
       break
     end
