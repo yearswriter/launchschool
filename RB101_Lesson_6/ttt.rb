@@ -20,7 +20,7 @@ def set_board_data!(board, row, col, table, value)
   board[table]
 end
 
-def get_board_data(board, row, col, table, _value)
+def get_board_data(board, row, col, table)
   case table
   when 'tileset'
     datatype = 0
@@ -46,8 +46,8 @@ end
 
 # Checking if tile still empty
 def empty?(board, row, col)
-  tile = get_board_data!(board, row, col, 'tileset')
-  turn = get_board_data!(board, row, col, 'player_turns')
+  tile = get_board_data(board, row, col, 'tileset')
+  turn = get_board_data(board, row, col, 'player_turns')
   tile.eql?(' ') || turn.zero?
 end
 
