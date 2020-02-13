@@ -1,5 +1,5 @@
 require 'yaml'
-require 'pry'
+
 # Drawing method + loading default tileset from config
 def draw_tile!(board, row, col, value)
   row = CONFIG['address_table']['rows'][row][0]
@@ -17,6 +17,7 @@ def fill_turn!(board, row, col, value)
 end
 
 # Checking if tile still empty
+# rubocop:disable Metrics/AbcSize
 def empty?(board, row, col)
   rows = CONFIG['address_table']['rows']
   cols = CONFIG['address_table']['cols']
@@ -33,6 +34,7 @@ def empty?(board, row, col)
   tileset[trow][tcol].eql?(' ') || player_turns[row][col].zero?
 end
 
+# rubocop:enable Metrics/AbcSize
 # Checking if there any empty places on whole board
 def untill_end?(board)
   board['player_turns'].flatten.select(&:zero?)
@@ -68,6 +70,7 @@ def win?(board, player)
   winner_lines?(board, player) || winner_dgnls?(board, player)
 end
 
+# rubocop:disable Metrics/AbcSize
 def computer_turn!(board, player, sign)
   row = CONFIG['address_table']['rows'].keys.sample
   col = CONFIG['address_table']['cols'].keys.sample
@@ -79,6 +82,7 @@ def computer_turn!(board, player, sign)
   draw_tile!(board, row, col, sign)
 end
 
+# rubocop:enable Metrics/AbcSize
 def human_turn!(board, player, sign)
   answer = gets.chomp
   answer = answer.split(' ')
@@ -93,9 +97,14 @@ def human_turn!(board, player, sign)
 end
 
 # A standart turn method
+# rubocop:disable Metrics/MethodLength:
+# this one is indeed not pretty
 def turn!(board, player)
   system 'cls'
+  # rubocop:disable Metrics/LineLength
+  # I mean it is an OK line
   puts "|> Input Player##{player} turn: '|> row col' (left\\right\\top\\bot\\mid)"
+  # rubocop:enable Metrics/LineLength
   puts board['tileset']
   print "|> "
 
@@ -118,7 +127,7 @@ def turn!(board, player)
   end
   #---------------------
 end
-
+# rubocop:enable Metrics/MethodLength:
 # main game loop
 loop do
   CONFIG = YAML.load_file('./config.yml')
