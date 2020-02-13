@@ -1,5 +1,4 @@
 require 'yaml'
-
 # Drawing method + loading default tileset from config
 def draw_tile!(board, row, col, value)
   row = CONFIG['address_table']['rows'][row][0]
@@ -83,21 +82,8 @@ def computer_turn!(board, player, sign)
 end
 
 # rubocop:enable Metrics/AbcSize
-def human_turn!(board, player, sign)
-  answer = gets.chomp
-  answer = answer.split(' ')
-  # input checks
-  return 'Wrong input' if answer.empty?
-  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
-  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-  return 'Cell is taken' unless empty?(board, answer[0], answer[1])
-
-  fill_turn!(board, answer[0], answer[1], player)
-  draw_tile!(board, answer[0], answer[1], sign)
-end
 
 # A standart turn method
-# rubocop:disable Metrics/MethodLength:
 # this one is indeed not pretty
 def turn!(board, player)
   system 'cls'
@@ -111,7 +97,16 @@ def turn!(board, player)
   # actual turn
   case player
   when 1
-    human_turn!(board, player, 'X')
+    answer = gets.chomp
+    answer = answer.split(' ')
+    # input checks
+    return 'Wrong input' if answer.empty?
+    return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
+    return 'Wrong input' unless answer[1].match?(/left|right|mid/)
+    return 'Cell is taken' unless empty?(board, *answer)
+
+    fill_turn!(board, *answer, player)
+    draw_tile!(board, *answer, 'X')
   when 2
     computer_turn!(board, player, 'O')
   else
@@ -127,7 +122,7 @@ def turn!(board, player)
   end
   #---------------------
 end
-# rubocop:enable Metrics/MethodLength:
+
 # main game loop
 loop do
   CONFIG = YAML.load_file('./config.yml')
