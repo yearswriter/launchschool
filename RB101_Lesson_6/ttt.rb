@@ -56,72 +56,124 @@ def out_of_turns?(board)
   board['player_turns'].flatten.select(&:zero?).empty?
 end
 
-# searching for winner lines
-def winner_lines?(board, player)
-  player_turns = board['player_turns']
-
-  cols = player_turns.map do |row|
-    row.reduce { |acc, val| val if val == acc }
+def line_stat(player_turns, player)
+  line_stat = []
+  player_turns.each do |row|
+    line_stat = row if row.count(player).eql?(3)
   end
-
-  rows = player_turns.transpose.map do |row|
-    row.reduce { |acc, val| val if val == acc }
-  end
-
-  cols.include?(player) || rows.include?(player)
+  return line_stat
 end
 
-# searching for winner diagonals
-def winner_dgnls?(board, player)
-  lr = board['player_turns'].to_s.match?(
-    /^\[\[#{player}, \d, \d\], \[\d, #{player}, \d\], \[\d, \d, #{player}\]\]$/
-  )
-  rl = board['player_turns'].to_s.match?(
-    /^\[\[\d, \d, #{player}\], \[\d, #{player}, \d\], \[#{player}, \d, \d\]\]$/
-  )
-  lr || rl
+def diag_stat(player_turns, player, diag)
+  diag_stat = []
+  player_turns.each_with_index do |line, index|
+    diag_stat.push(line[diag[index]])
+  end
+  diag_stat
+end
+
+def row_stat(board, player)
+  player_turns = board['player_turns']
+  return line_stat(player_turns, player)
+end
+
+def column_stat(board, player)
+  player_turns = board['player_turns'].transpose
+  return line_stat(player_turns, player)
+end
+
+def r_to_l_stat(board, player)
+  diag = board['diag'].reverse
+  player_turns = board['player_turns']
+  return diag_stat(player_turns, player, diag)
+end
+
+def l_to_r_stat(board, player)
+  diag = board['diag']
+  player_turns = board['player_turns']
+  return diag_stat(player_turns, player, diag)
+end
+
+def danger_line?(player_turns, player)
+  danger_line = nil
+  player_turns.each_with_index do |line, index|
+    danger_line = index if line.count(player)eql?(2)
+  end
+  if danger_line.nil?
+    return false
+  else
+    return danger_line?
+  end
 end
 
 def win?(board, player)
-  winner_lines?(board, player) || winner_dgnls?(board, player)
+  r = row_stat(board, player)
+  c = column_stat(board, player)
+  rd = r_to_l_stat(board, player)
+  ld = l_to_r_stat(board, player)
+  [r, c, rd, ld].any? do |stat|
+    stat.count(player) == 3
+  end
 end
 
-def computer_turn!(board, player, sign)
-  row = board['rows'].keys.sample
-  col = board['cols'].keys.sample
+def random_turn!(board, player, sign, row, col)
+  row row.sample
+  col.sample
   until empty?(board, row, col)
-    row = board['rows'].keys.sample
-    col = board['cols'].keys.sample
+    row.sample
+    col.sample
   end
   fill_turn!(board, row, col, player)
   draw_tile!(board, row, col, sign)
 end
 
-# method for displaying status and promt + current board
-def display(tileset, player)
-  system 'cls'
-  puts "
-   => Input Player №#{player} turn:
-          'row col'
-       "
-  puts
-  side = [['     row     '],
-         ['     |||     '],
-       ['-top-mid-bot-']]
-  puts 'col _ left  | mid | right'.rjust(23)
-  tileset.each_with_index do |line, index|
-    line = side[0][0][index] + " " +
-    side[1][0][index] + " " +
-    side[2][0][index] + " " + line
-    puts line.rjust(20)
-  end
-  puts
-  print '   => '
+def computer_turn!(board, player, sign)
+  player_turns = board['player_turns']
+  danger_row = danger_line?(player_turns,player)
+  row_sample = board['rows'].keys.sample
+  col_sample = board['cols'].keys.sample
+  if danger_line
+
+
+  random_turn!(board, player, sign, row_sample, col_sample)
 end
+
+# method to add HUD to tileset
+def hud(tileset, game_n, score_1, score_2)
+  left_side = ['     row     ',
+               '     |||     ',
+               '-top-mid-bot-']
+  score = "         Game #{game_n + 1} score:
+         Player № 1: #{score_1}
+         PLayer № 2: #{score_2}"
+  score = score.lines.map { |l| l.chomp.chars }
+  right_side = score.transpose.map { |l| l.join('') }
+  puts 'col _ left  | mid | right'.rjust(23)
+  tileset = tileset.each_with_index.map do |line, index|
+    left_hud = ''
+    right_hud = ''
+    left_side.each do |side_hud|
+      left_hud << side_hud[index] + " "
+    end
+    right_side.each do |side_hud|
+      right_hud << side_hud[index].to_s
+    end
+    left_hud << line << right_hud.to_s
+  end
+  puts tileset
+end
+
+# method for displaying status and promt + current board
+def display(tileset, player, game_n, score_1, score_2)
+  system 'cls'
+  print "\n   => Input Player №#{player} turn:
+          'row col'\n\n"
+  hud(tileset, game_n, score_1, score_2)
+  print "\n   => "
+end
+
 # A standart turn method
 def turn!(board, player)
-#  display(board, player)
-  # actual turn
   case player
   when 1
     answer = gets.chomp.split(' ')
@@ -136,7 +188,7 @@ def turn!(board, player)
   when 2
     computer_turn!(board, player, 'O')
   else
-    return 'No such player ID'
+    return 'no such player ID'
   end
   # win condition checks
   if win?(board, player)
@@ -144,23 +196,26 @@ def turn!(board, player)
   elsif out_of_turns?(board)
     return 'Tie'
   end
-  return board
+
+  board
 end
 
 # main game loop
-loop do
+5.times do |game_n|
+  score_1 = 0
+  score_2 = 0
   board = YAML.load_file('./board.yml')
   game = [1, 2]
   system 'cls'
-  puts '
-   => player sign is an "X"
+  puts "   => Game #{game_n + 1}
+   => player sign is an 'X'
             Choose,
       go first or second:
             1 or 2
-       '
-  player = gets.chomp
-  display(board['tileset'], player)
-  case player
+       "
+  turn = gets.chomp
+  display(board['tileset'], turn, game_n, score_1, score_2)
+  case turn
   when '1'
     game = [1, 2]
   when '2'
@@ -170,26 +225,28 @@ loop do
   end
   game.cycle do |player|
     turn = turn!(board, player)
-    display(board['tileset'], player)
+    display(board['tileset'], player, game_n, score_1, score_2)
     case turn
     when 'Wrong input'
       puts 'Wrong input'
-      print '=> '.rjust(5)
+      print '   => '
       redo
     when 'Cell is taken'
       puts 'Cell is taken'
-      print '=> '.rjust(5)
+      print '   => '
       redo
     when 1..2
-      puts "Player №#{player} WON!"
+      puts "Player №#{player} WOn!"
+      print '   => '
       break
     when 'Tie'
       puts 'IT\'S A TIE!'
+      print '   => '
       break
     else
-      display(board['tileset'], player)
+      display(board['tileset'], player, game_n, score_1, score_2)
     end
   end
-  puts '=> another game?|(y\n)'.rjust(25)
-  return unless gets.chomp == 'y'
+  print 'another game?|(y\n): '
+  break unless gets.chomp == 'y'
 end
