@@ -94,18 +94,6 @@ def l_to_r_stat(board, player)
   return diag_stat(player_turns, player, diag)
 end
 
-def danger_line?(player_turns, player)
-  danger_line = nil
-  player_turns.each_with_index do |line, index|
-    danger_line = index if line.count(player)eql?(2)
-  end
-  if danger_line.nil?
-    return false
-  else
-    return danger_line?
-  end
-end
-
 def win?(board, player)
   r = row_stat(board, player)
   c = column_stat(board, player)
@@ -116,26 +104,33 @@ def win?(board, player)
   end
 end
 
-def random_turn!(board, player, sign, row, col)
-  row row.sample
-  col.sample
-  until empty?(board, row, col)
-    row.sample
-    col.sample
+def danger_line?(player_turns, player)
+  danger_line = false
+  player_turns.each_with_index do |line, index|
+    danger_line = index if line.count(player).eql?(2)
+  end
+  return danger_line
+end
+
+def random_turn!(board, player, sign)
+  col = nil
+  row = nil
+  danger_line = danger_line?(board['player_turns'], 1)
+  loop do
+    col = board['cols'].keys.sample
+    if !!danger_line
+      row = board['rows'].keys[danger_line]
+    else
+      row = board['rows'].keys.sample
+    end
+    break if empty?(board, row, col)
   end
   fill_turn!(board, row, col, player)
   draw_tile!(board, row, col, sign)
 end
 
 def computer_turn!(board, player, sign)
-  player_turns = board['player_turns']
-  danger_row = danger_line?(player_turns,player)
-  row_sample = board['rows'].keys.sample
-  col_sample = board['cols'].keys.sample
-  if danger_line
-
-
-  random_turn!(board, player, sign, row_sample, col_sample)
+  random_turn!(board, player, sign)
 end
 
 # method to add HUD to tileset
@@ -165,7 +160,7 @@ end
 
 # method for displaying status and promt + current board
 def display(tileset, player, game_n, score_1, score_2)
-  system 'cls'
+#  system 'cls'
   print "\n   => Input Player №#{player} turn:
           'row col'\n\n"
   hud(tileset, game_n, score_1, score_2)
