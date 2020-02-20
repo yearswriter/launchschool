@@ -112,8 +112,17 @@ def danger_line?(player_turns, player)
   danger_line
 end
 
-def danger_row?(player_turns, player)
-  danger_line?(player_turns, player)
+def finisher_turn!(board, player)
+  row = danger_line?(board['player_turns'], player)
+  col = danger_line?(board['player_turns'].transpose, player)
+  loop do
+    row = board['rows'].keys[row] if row
+    col = board['cols'].keys[col] if col
+    row ||= board['rows'].keys.sample
+    col ||= board['cols'].keys.sample
+    break if empty?(board, row, col)
+  end
+  return row, col
 end
 
 def random_turn!(board)
@@ -127,17 +136,13 @@ def random_turn!(board)
   return row, col
 end
 
-def finisher_turn!(board, player)
-  danger_row?(board['player_turns'], player)
-end
-
 def computer_turn!(board, player, sign, ai_type)
   address = []
   case ai_type
   when 'random'
     address = random_turn!(board)
   when 'defensive'
-    address = finisher_turn!(board, 'player')
+    address = finisher_turn!(board, 'human')
   end
   fill_turn!(board, *address, player)
   draw_tile!(board, *address, sign)
@@ -208,7 +213,7 @@ def turn!(board, player)
          when 'human'
            human_turn!(board, player, 'X')
          when 'computer'
-           computer_turn!(board, player, 'O', 'random')
+           computer_turn!(board, player, 'O', 'defensive')
          else
            'Wrong player type!'
          end
