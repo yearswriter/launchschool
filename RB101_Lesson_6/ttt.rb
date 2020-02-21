@@ -112,15 +112,31 @@ def danger_line?(player_turns, player)
   danger_line
 end
 
+def line_full?(board, line)
+ line = board['player_turns'][line]
+ line.select { |t| t.eql?(0) }.empty?
+end
+
 def finisher_turn!(board, player)
   row = danger_line?(board['player_turns'], player)
   col = danger_line?(board['player_turns'].transpose, player)
-  loop do
-    row = board['rows'].keys[row] if row
-    col = board['cols'].keys[col] if col
-    row ||= board['rows'].keys.sample
-    col ||= board['cols'].keys.sample
-    break if empty?(board, row, col)
+  binding.pry
+  if row && !!line_full?(board, row)
+    row = board['rows'].keys[row]
+  else
+    return random_turn!(board)
+  end
+
+  if col && !!line_full?(board, col)
+    col = board['cols'].keys[col]
+  else
+    return random_turn!(board)
+  end
+  
+  binding.pry
+
+  unless row && col
+    return random_turn!(board)
   end
   return row, col
 end
