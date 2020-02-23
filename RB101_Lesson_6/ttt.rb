@@ -115,8 +115,8 @@ end
 def random_turn!(board, player, sign)
   col = nil
   row = nil
-  danger_line = danger_line?(board['player_turns'], 1)
   loop do
+    danger_line = danger_line?(board['player_turns'], 1)
     col = board['cols'].keys.sample
     if !!danger_line
       row = board['rows'].keys[danger_line]
