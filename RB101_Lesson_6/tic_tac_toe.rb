@@ -120,6 +120,10 @@ def danger_col?(player_turns, player)
   danger_line?(player_turns.transpose, player)
 end
 
+def full?(line)
+  return line || false
+end
+
 def defensive_turn!(player_turns, player)
    row = random_turn!(board)[0]
    col = random_turn!(board)[1]
@@ -134,7 +138,13 @@ def defensive_turn!(player_turns, player)
     col = board['cols'].keys[danger_col]
   end
 
-  if full?(line)
+  if full?(danger_row)
+    defensive_turn!(player_turns.slice!(danger_row), player)
+  elsif full?(danger_col)
+    # actually? probably worth rethinking methods, so
+    # cols get transposed one time somwhere up the chain
+
+  end
   # if a row(or col)(seprately) is full
   # recursively call defensive_turn! on board with less rows(cols)
   # extra exit point if board is full
