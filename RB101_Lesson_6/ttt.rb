@@ -112,31 +112,33 @@ def danger_line?(player_turns, player)
   danger_line
 end
 
-def line_full?(board, line)
- line = board['player_turns'][line]
- line.select { |t| t.eql?(0) }.empty?
+def danger_row?(board, player)
+  danger_line?(board['player_turns'], player)
 end
 
-def finisher_turn!(board, player)
-  row = danger_line?(board['player_turns'], player)
-  col = danger_line?(board['player_turns'].transpose, player)
-  binding.pry
-  if row && !!line_full?(board, row)
-    row = board['rows'].keys[row]
-  else
-    return random_turn!(board)
-  end
+def danger_col?(board, player)
+  danger_line?(board['player_turns'].transpose, player)
+end
 
-  if col && !!line_full?(board, col)
-    col = board['cols'].keys[col]
-  else
-    return random_turn!(board)
-  end
-  
-  binding.pry
+def defensive_turn!(board, player)
+   row = random_turn!(board)[0]
+   col = random_turn!(board)[1]
+  loop do
+    danger_row = danger_row?(board, player)
+    danger_col = danger_col?(board, player)
+    binding.pry
+    if danger_row
+      row = board['rows'].keys[danger_row]
+      col = board['cols'].keys.sample
+    elsif danger_col
+      row = board['rows'].keys.sample
+      col = board['cols'].keys[danger_col]
+    end
+    # if a row(or col)(seprately) is full
+    # recursively call defensive_turn! on board with less rows(cols)
+    # extra exit point if board is full
 
-  unless row && col
-    return random_turn!(board)
+    break if empty?(board, row, col)
   end
   return row, col
 end
@@ -158,7 +160,7 @@ def computer_turn!(board, player, sign, ai_type)
   when 'random'
     address = random_turn!(board)
   when 'defensive'
-    address = finisher_turn!(board, 'human')
+    address = defensive_turn!(board, 'human')
   end
   fill_turn!(board, *address, player)
   draw_tile!(board, *address, sign)
@@ -180,8 +182,6 @@ def human_turn!(board, player, _sign)
 end
 
 # method to add HUD to tileset
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/MethodLength
 # This is last messy method and it does do arcane stuff
 # to format output
 def hud(tileset, game_n, score1, score2)
@@ -207,13 +207,10 @@ def hud(tileset, game_n, score1, score2)
   end
   puts tileset
 end
-# rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/MethodLength
 
 # method for displaying status and promt + current board
-# rubocop:disable Metrics/ParameterLists
 # probably can just pass objects instead of huge param list
-def display(tileset, _player, game_n, score1, score2, mesg, error)
+def display(tileset, player, game_n, score1, score2, mesg, error)
   system 'clear'
   system 'cls'
   hud(tileset, game_n, score1, score2)
@@ -221,7 +218,6 @@ def display(tileset, _player, game_n, score1, score2, mesg, error)
   puts error.to_s.rjust(23)
   print "   => ".rjust(3)
 end
-# rubocop:enable Metrics/ParameterLists
 
 # A standart turn method
 def turn!(board, player)
