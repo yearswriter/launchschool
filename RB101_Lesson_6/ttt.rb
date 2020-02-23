@@ -48,12 +48,12 @@ end
 def empty?(board, row, col)
   tile = get_board_data(board, row, col, 'tileset')
   turn = get_board_data(board, row, col, 'player_turns')
-  tile.eql?(' ') || turn.zero?
+  tile.eql?(' ') || turn.eql?(0)
 end
 
 # Checking if there any empty places on whole board
 def out_of_turns?(board)
-  board['player_turns'].flatten.select(&:zero?).empty?
+  board['player_turns'].flatten.select { |t| t.eql?(0) }.empty?
 end
 
 def line_stat(player_turns, player)
@@ -61,10 +61,10 @@ def line_stat(player_turns, player)
   player_turns.each do |row|
     line_stat = row if row.count(player).eql?(3)
   end
-  return line_stat
+  line_stat
 end
 
-def diag_stat(player_turns, player, diag)
+def diag_stat(player_turns, _player, diag)
   diag_stat = []
   player_turns.each_with_index do |line, index|
     diag_stat.push(line[diag[index]])
@@ -74,24 +74,24 @@ end
 
 def row_stat(board, player)
   player_turns = board['player_turns']
-  return line_stat(player_turns, player)
+  line_stat(player_turns, player)
 end
 
 def column_stat(board, player)
   player_turns = board['player_turns'].transpose
-  return line_stat(player_turns, player)
+  line_stat(player_turns, player)
 end
 
 def r_to_l_stat(board, player)
   diag = board['diag'].reverse
   player_turns = board['player_turns']
-  return diag_stat(player_turns, player, diag)
+  diag_stat(player_turns, player, diag)
 end
 
 def l_to_r_stat(board, player)
   diag = board['diag']
   player_turns = board['player_turns']
-  return diag_stat(player_turns, player, diag)
+  diag_stat(player_turns, player, diag)
 end
 
 def win?(board, player)
@@ -109,38 +109,88 @@ def danger_line?(player_turns, player)
   player_turns.each_with_index do |line, index|
     danger_line = index if line.count(player).eql?(2)
   end
-  return danger_line
+  danger_line
 end
 
-def random_turn!(board, player, sign)
-  col = nil
-  row = nil
+def danger_row?(board, player)
+  danger_line?(board['player_turns'], player)
+end
+
+def danger_col?(board, player)
+  danger_line?(board['player_turns'].transpose, player)
+end
+
+def defensive_turn!(board, player)
+   row = random_turn!(board)[0]
+   col = random_turn!(board)[1]
   loop do
-    danger_line = danger_line?(board['player_turns'], 1)
-    col = board['cols'].keys.sample
-    if !!danger_line
-      row = board['rows'].keys[danger_line]
-    else
+    danger_row = danger_row?(board, player)
+    danger_col = danger_col?(board, player)
+    binding.pry
+    if danger_row
+      row = board['rows'].keys[danger_row]
+      col = board['cols'].keys.sample
+    elsif danger_col
       row = board['rows'].keys.sample
+      col = board['cols'].keys[danger_col]
     end
+    # if a row(or col)(seprately) is full
+    # recursively call defensive_turn! on board with less rows(cols)
+    # extra exit point if board is full
+
     break if empty?(board, row, col)
   end
-  fill_turn!(board, row, col, player)
-  draw_tile!(board, row, col, sign)
+  return row, col
 end
 
-def computer_turn!(board, player, sign)
-  random_turn!(board, player, sign)
+def random_turn!(board)
+  row = board['rows'].keys.sample
+  col = board['cols'].keys.sample
+  loop do
+    col = board['cols'].keys.sample
+    row = board['rows'].keys.sample
+    break if empty?(board, row, col)
+  end
+  return row, col
+end
+
+def computer_turn!(board, player, sign, ai_type)
+  address = []
+  case ai_type
+  when 'random'
+    address = random_turn!(board)
+  when 'defensive'
+    address = defensive_turn!(board, 'human')
+  end
+  fill_turn!(board, *address, player)
+  draw_tile!(board, *address, sign)
+end
+
+def human_turn!(board, player, _sign)
+  # input checks
+  answer = gets.chomp
+  return 'Wrong input' if answer.empty?
+
+  answer = answer.split(' ')
+  return 'Wrong input' if answer[1].nil?
+  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
+  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
+  return 'Cell is taken' unless empty?(board, *answer)
+
+  fill_turn!(board, *answer, player)
+  draw_tile!(board, *answer, 'X')
 end
 
 # method to add HUD to tileset
-def hud(tileset, game_n, score_1, score_2)
+# This is last messy method and it does do arcane stuff
+# to format output
+def hud(tileset, game_n, score1, score2)
   left_side = ['     row     ',
                '     |||     ',
                '-top-mid-bot-']
-  score = "         Game #{game_n + 1} score:
-         Player № 1: #{score_1}
-         PLayer № 2: #{score_2}"
+  score = "             Game #{game_n.to_i + 1} score:
+                  Human: #{score1}
+               Computer: #{score2}"
   score = score.lines.map { |l| l.chomp.chars }
   right_side = score.transpose.map { |l| l.join('') }
   puts 'col _ left  | mid | right'.rjust(23)
@@ -159,89 +209,98 @@ def hud(tileset, game_n, score_1, score_2)
 end
 
 # method for displaying status and promt + current board
-def display(tileset, player, game_n, score_1, score_2)
-#  system 'cls'
-  print "\n   => Input Player №#{player} turn:
-          'row col'\n\n"
-  hud(tileset, game_n, score_1, score_2)
-  print "\n   => "
+# probably can just pass objects instead of huge param list
+def display(tileset, player, game_n, score1, score2, mesg, error)
+  system 'clear'
+  system 'cls'
+  hud(tileset, game_n, score1, score2)
+  puts mesg.rjust(23)
+  puts error.to_s.rjust(23)
+  print "   => ".rjust(3)
 end
 
 # A standart turn method
 def turn!(board, player)
-  case player
-  when 1
-    answer = gets.chomp.split(' ')
-    # input checks
-    return 'Wrong input' if answer.empty?
-    return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
-    return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-    return 'Cell is taken' unless empty?(board, *answer)
-
-    fill_turn!(board, *answer, player)
-    draw_tile!(board, *answer, 'X')
-  when 2
-    computer_turn!(board, player, 'O')
-  else
-    return 'no such player ID'
-  end
-  # win condition checks
-  if win?(board, player)
+  turn = case player
+         when 'human'
+           human_turn!(board, player, 'X')
+         when 'computer'
+           computer_turn!(board, player, 'O', 'defensive')
+         else
+           'Wrong player type!'
+         end
+  winner = win?(board, player)
+  if winner
     return player
   elsif out_of_turns?(board)
     return 'Tie'
   end
 
-  board
+  turn
 end
 
 # main game loop
-5.times do |game_n|
-  score_1 = 0
-  score_2 = 0
+game_set = ['']
+game = ['']
+mesg = ''
+error = ''
+game_set.each_with_index do |_game_winner, game_n|
+  score1 = game_set.count('human')
+  score2 = game_set.count('computer')
   board = YAML.load_file('./board.yml')
-  game = [1, 2]
+
   system 'cls'
-  puts "   => Game #{game_n + 1}
-   => player sign is an 'X'
-            Choose,
-      go first or second:
-            1 or 2
-       "
-  turn = gets.chomp
-  display(board['tileset'], turn, game_n, score_1, score_2)
-  case turn
+  mesg = "Game #{game_n + 1}," \
+         "player sign is an 'X'\n" \
+         "Choose, go first or second:
+                 1 or 2"
+  display(board['tileset'], '', game_n, score1, score2, mesg, error)
+  case gets.chomp
   when '1'
-    game = [1, 2]
+    game = ['human', 'computer']
+    error = ''
   when '2'
-    game = [2, 1]
+    game = ['computer', 'human']
+    error = ''
   else
-    return puts "Wrong answer"
+    error = 'There is no such player'
+    display(board['tileset'], '', game_n, score1, score2, mesg, error)
+    redo
   end
+
   game.cycle do |player|
+    mesg = "Game #{game_n + 1}:\n" \
+           "Input #{player.capitalize} player turn: 'row col'"
+    display(board['tileset'], player, game_n, score1, score2, mesg, error)
     turn = turn!(board, player)
-    display(board['tileset'], player, game_n, score_1, score_2)
     case turn
     when 'Wrong input'
-      puts 'Wrong input'
-      print '   => '
+      error = 'Wrong input'
       redo
     when 'Cell is taken'
-      puts 'Cell is taken'
-      print '   => '
+      error =  'Cell is taken'
       redo
-    when 1..2
-      puts "Player №#{player} WOn!"
-      print '   => '
+    when 'human' || 'computer'
+      error = ''
+      mesg = "#{player.capitalize} player WON!"
+      game_set.push(player)
+      display(board['tileset'], player, game_n, score1, score2, mesg, error)
       break
     when 'Tie'
-      puts 'IT\'S A TIE!'
-      print '   => '
+      error = ''
+      mesg =  'IT\'S A TIE!'
+      game_set.push('tie')
+      display(board['tileset'], player, game_n, score1, score2, mesg, error)
       break
-    else
-      display(board['tileset'], player, game_n, score_1, score_2)
     end
+    error = ''
   end
-  print 'another game?|(y\n): '
-  break unless gets.chomp == 'y'
+
+  print 'another game?|(y or n): '
+
+  answer = gets.chomp.downcase
+  if answer.eql?('n') || game_set.length > 5
+    display(board['tileset'], '', game_n, score1, score2, 'Game Over!', '')
+    break
+  end
 end
