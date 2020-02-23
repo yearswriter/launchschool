@@ -112,35 +112,34 @@ def danger_line?(player_turns, player)
   danger_line
 end
 
-def danger_row?(board, player)
-  danger_line?(board['player_turns'], player)
+def danger_row?(player_turns, player)
+  danger_line?(player_turns, player)
 end
 
-def danger_col?(board, player)
-  danger_line?(board['player_turns'].transpose, player)
+def danger_col?(player_turns, player)
+  danger_line?(player_turns.transpose, player)
 end
 
-def defensive_turn!(board, player)
+def defensive_turn!(player_turns, player)
    row = random_turn!(board)[0]
    col = random_turn!(board)[1]
-  loop do
-    danger_row = danger_row?(board, player)
-    danger_col = danger_col?(board, player)
-    binding.pry
-    if danger_row
-      row = board['rows'].keys[danger_row]
-      col = board['cols'].keys.sample
-    elsif danger_col
-      row = board['rows'].keys.sample
-      col = board['cols'].keys[danger_col]
-    end
-    # if a row(or col)(seprately) is full
-    # recursively call defensive_turn! on board with less rows(cols)
-    # extra exit point if board is full
-
-    break if empty?(board, row, col)
+  danger_row = danger_row?(player_turns, player)
+  danger_col = danger_col?(player_turns, player)
+  binding.pry
+  if danger_row
+    row = board['rows'].keys[danger_row]
+    col = board['cols'].keys.sample
+  elsif danger_col
+    row = board['rows'].keys.sample
+    col = board['cols'].keys[danger_col]
   end
-  return row, col
+
+  if full?(line)
+  # if a row(or col)(seprately) is full
+  # recursively call defensive_turn! on board with less rows(cols)
+  # extra exit point if board is full
+
+  return row, col if empty?(board, row, col)
 end
 
 def random_turn!(board)
