@@ -1,315 +1,192 @@
 require 'yaml'
 require 'pry'
-# Drawing method + loading default tileset from config
+require 'io/console'
 
-# There is a tileset in config (easier to draw), player turns data
-# (easier to analize) and addres table that connects them
-# general data change method
-def set_board_data!(board, row, col, table, value)
-  case table
-  when 'tileset'
-    datatype = 0
-  when 'player_turns'
-    datatype = 1
-  else
-    return 'There is no such table in a board'
-  end
-  row = board['rows'][row][datatype]
-  col = board['cols'][col][datatype]
-  board[table][row][col] = value
-  board[table]
+board = YAML.load_file('./board.yml')
+
+def check_terminal_size(_board)
+  size = IO.console.winsize[1]
+  return false unless size < 70
+
+  "Terminal width of #{size} is unsupported,\
+  minimal is 70 chars. Please resize and restart."
 end
 
-def get_board_data(board, row, col, table)
-  case table
-  when 'tileset'
-    datatype = 0
-  when 'player_turns'
-    datatype = 1
-  else
-    return 'There is no such table in a board'
-  end
-  row = board['rows'][row][datatype]
-  col = board['cols'][col][datatype]
-  board[table][row][col]
-end
-
-# just a shorthand for this_exact operation (draw tile)
-def draw_tile!(board, row, col, value)
-  set_board_data!(board, row, col, 'tileset', value)
-end
-
-# just a shorthand for this_exact operation (draw tile)
-def fill_turn!(board, row, col, value)
-  set_board_data!(board, row, col, 'player_turns', value)
-end
-
-# Checking if tile still empty
-def empty?(board, row, col)
-  tile = get_board_data(board, row, col, 'tileset')
-  turn = get_board_data(board, row, col, 'player_turns')
-  tile.eql?(' ') || turn.eql?(0)
-end
-
-# Checking if there any empty places on whole board
-def out_of_turns?(board)
-  board['player_turns'].flatten.select { |t| t.eql?(0) }.empty?
-end
-
-def line_stat(player_turns, player)
-  line_stat = []
-  player_turns.each do |row|
-    line_stat = row if row.count(player).eql?(3)
-  end
-  line_stat
-end
-
-def diag_stat(player_turns, _player, diag)
-  diag_stat = []
-  player_turns.each_with_index do |line, index|
-    diag_stat.push(line[diag[index]])
-  end
-  diag_stat
-end
-
-def row_stat(board, player)
-  player_turns = board['player_turns']
-  line_stat(player_turns, player)
-end
-
-def column_stat(board, player)
-  player_turns = board['player_turns'].transpose
-  line_stat(player_turns, player)
-end
-
-def r_to_l_stat(board, player)
-  diag = board['diag'].reverse
-  player_turns = board['player_turns']
-  diag_stat(player_turns, player, diag)
-end
-
-def l_to_r_stat(board, player)
-  diag = board['diag']
-  player_turns = board['player_turns']
-  diag_stat(player_turns, player, diag)
-end
-
-def win?(board, player)
-  r = row_stat(board, player)
-  c = column_stat(board, player)
-  rd = r_to_l_stat(board, player)
-  ld = l_to_r_stat(board, player)
-  [r, c, rd, ld].any? do |stat|
-    stat.count(player) == 3
-  end
-end
-
-def danger_line?(player_turns, player)
-  danger_line = false
-  player_turns.each_with_index do |line, index|
-    danger_line = index if line.count(player).eql?(2)
-  end
-  danger_line
-end
-
-def danger_row?(player_turns, player)
-  danger_line?(player_turns, player)
-end
-
-def danger_col?(player_turns, player)
-  danger_line?(player_turns.transpose, player)
-end
-
-def full?(line)
-  return line || false
-end
-
-def defensive_turn!(player_turns, player)
-   row = random_turn!(board)[0]
-   col = random_turn!(board)[1]
-  danger_row = danger_row?(player_turns, player)
-  danger_col = danger_col?(player_turns, player)
-  binding.pry
-  if danger_row
-    row = board['rows'].keys[danger_row]
-    col = board['cols'].keys.sample
-  elsif danger_col
-    row = board['rows'].keys.sample
-    col = board['cols'].keys[danger_col]
-  end
-
-  if full?(danger_row)
-    defensive_turn!(player_turns.slice!(danger_row), player)
-  elsif full?(danger_col)
-    # actually? probably worth rethinking methods, so
-    # cols get transposed one time somwhere up the chain
-
-  end
-  # if a row(or col)(seprately) is full
-  # recursively call defensive_turn! on board with less rows(cols)
-  # extra exit point if board is full
-
-  return row, col if empty?(board, row, col)
-end
-
-def random_turn!(board)
-  row = board['rows'].keys.sample
-  col = board['cols'].keys.sample
-  loop do
-    col = board['cols'].keys.sample
-    row = board['rows'].keys.sample
-    break if empty?(board, row, col)
-  end
-  return row, col
-end
-
-def computer_turn!(board, player, sign, ai_type)
-  address = []
-  case ai_type
-  when 'random'
-    address = random_turn!(board)
-  when 'defensive'
-    address = defensive_turn!(board, 'human')
-  end
-  fill_turn!(board, *address, player)
-  draw_tile!(board, *address, sign)
-end
-
-def human_turn!(board, player, _sign)
-  # input checks
-  answer = gets.chomp
-  return 'Wrong input' if answer.empty?
-
-  answer = answer.split(' ')
-  return 'Wrong input' if answer[1].nil?
-  return 'Wrong input' unless answer[0].match?(/top|bot|mid/)
-  return 'Wrong input' unless answer[1].match?(/left|right|mid/)
-  return 'Cell is taken' unless empty?(board, *answer)
-
-  fill_turn!(board, *answer, player)
-  draw_tile!(board, *answer, 'X')
-end
-
-# method to add HUD to tileset
-# This is last messy method and it does do arcane stuff
-# to format output
-def hud(tileset, game_n, score1, score2)
-  left_side = ['     row     ',
-               '     |||     ',
-               '-top-mid-bot-']
-  score = "             Game #{game_n.to_i + 1} score:
-                  Human: #{score1}
-               Computer: #{score2}"
-  score = score.lines.map { |l| l.chomp.chars }
-  right_side = score.transpose.map { |l| l.join('') }
-  puts 'col _ left  | mid | right'.rjust(23)
-  tileset = tileset.each_with_index.map do |line, index|
-    left_hud = ''
-    right_hud = ''
-    left_side.each do |side_hud|
-      left_hud << side_hud[index] + " "
-    end
-    right_side.each do |side_hud|
-      right_hud << side_hud[index].to_s
-    end
-    left_hud << line << right_hud.to_s
-  end
-  puts tileset
-end
-
-# method for displaying status and promt + current board
-# probably can just pass objects instead of huge param list
-def display(tileset, player, game_n, score1, score2, mesg, error)
+def clear
+  system 'cls'
   system 'clear'
-  system 'cls'
-  hud(tileset, game_n, score1, score2)
-  puts mesg.rjust(23)
-  puts error.to_s.rjust(23)
-  print "   => ".rjust(3)
 end
 
-# A standart turn method
-def turn!(board, player)
-  turn = case player
-         when 'human'
-           human_turn!(board, player, 'X')
-         when 'computer'
-           computer_turn!(board, player, 'O', 'defensive')
-         else
-           'Wrong player type!'
-         end
-  winner = win?(board, player)
-  if winner
-    return player
-  elsif out_of_turns?(board)
-    return 'Tie'
-  end
-
-  turn
+def set_turn!(board, value, row, col)
+  row = board['rows'][row]
+  col = board['cols'][col]
+  tiles = board['game_field'].lines
+  tiles[row][col] = value
+  board['game_field'] = tiles.join('')
 end
 
-# main game loop
-game_set = ['']
-game = ['']
-mesg = ''
-error = ''
-game_set.each_with_index do |_game_winner, game_n|
-  score1 = game_set.count('human')
-  score2 = game_set.count('computer')
-  board = YAML.load_file('./board.yml')
-
-  system 'cls'
-  mesg = "Game #{game_n + 1}," \
-         "player sign is an 'X'\n" \
-         "Choose, go first or second:
-                 1 or 2"
-  display(board['tileset'], '', game_n, score1, score2, mesg, error)
-  case gets.chomp
-  when '1'
-    game = ['human', 'computer']
-    error = ''
-  when '2'
-    game = ['computer', 'human']
-    error = ''
-  else
-    error = 'There is no such player'
-    display(board['tileset'], '', game_n, score1, score2, mesg, error)
-    redo
+def set_hud!(board, player, game_score)
+  game_field = board['game_field']
+  player += ' ' * (8 - player.length)
+  player = player[0...8]
+  players_types = board['players_types']
+  players_types.each do |player_type|
+    game_field.gsub!(/#{player_type}.*(?=╟)/, player)
   end
+  game_score.each do |key, value|
+    game_field.gsub!(/\#\{#{key}\}/, value.to_s)
+  end
+  board['game_field'] = game_field
+end
 
-  game.cycle do |player|
-    mesg = "Game #{game_n + 1}:\n" \
-           "Input #{player.capitalize} player turn: 'row col'"
-    display(board['tileset'], player, game_n, score1, score2, mesg, error)
-    turn = turn!(board, player)
-    case turn
-    when 'Wrong input'
-      error = 'Wrong input'
-      redo
-    when 'Cell is taken'
-      error =  'Cell is taken'
-      redo
-    when 'human' || 'computer'
-      error = ''
-      mesg = "#{player.capitalize} player WON!"
-      game_set.push(player)
-      display(board['tileset'], player, game_n, score1, score2, mesg, error)
-      break
-    when 'Tie'
-      error = ''
-      mesg =  'IT\'S A TIE!'
-      game_set.push('tie')
-      display(board['tileset'], player, game_n, score1, score2, mesg, error)
-      break
+def draw_turn!(board, turn)
+  player = turn[:player]
+  value = turn[:value]
+  address = turn[:address]
+  game_score = turn[:score]
+
+  set_turn!(board, value, *address)
+  set_hud!(board, player, game_score)
+
+  board
+end
+
+def get_board_status(board)
+  game_field = board['game_field'].lines
+  status = []
+  board['rows'].each_value do |row|
+    status_row = []
+    board['cols'].each_value do |col|
+      status_row.push(game_field[row][col])
     end
-    error = ''
+    status.push(status_row)
   end
+  status
+end
 
-  print 'another game?|(y or n): '
+def promt(board, promt)
+  er = check_terminal_size(board)
+  if er
+    puts er
+    exit
+  end
+  board['game_field'] + ' ' + promt.to_s
+end
 
-  answer = gets.chomp.downcase
-  if answer.eql?('n') || game_set.length > 5
-    display(board['tileset'], '', game_n, score1, score2, 'Game Over!', '')
-    break
+def input
+  print '        => '
+  gets.chomp.to_s
+end
+
+def not_exist?(board, row, col)
+  row_exist = board['rows'].keys.include?(row)
+  col_exist = board['rows'].keys.include?(col)
+  !(row_exist && col_exist)
+end
+
+def turn_input(board)
+  promt = "Please enter your turn: \
+  row col(umn)\
+  (see legend above)"
+  puts promt(board, promt)
+  answer = input.split("\s")
+  case answer
+  when answer.empty?
+    '[ERROR] Nothing was typed, please repeat.'
+  when answer[1].empty?
+    '[ERROR] Please input both row and column.'
+  when not_exist?(answer)
+    "[ERROR] Such row or column not exist,\
+consult with legend above"
   end
 end
+
+# just tests, no point in checking them
+# rubocop:disable  Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
+def tests(board)
+  # neat way to work with stdin pipe
+  # wonder if works on windows
+  def with_stdin
+     stdin = $stdin             # remember $stdin
+     $stdin, write = IO.pipe    # create pipe assigning its "read end" to $stdin
+     yield write                # pass pipe's "write end" to block
+   ensure
+     write.close                # close pipe
+     $stdin = stdin             # restore $stdin
+   end
+  # ==================
+  tests = YAML.load_file('./tests.yml')
+  test_board = board
+  puts 'Running tests: '
+  clear_board = {
+    player: 'computer',
+    value: ' ',
+    address: ['mid', 'mid'],
+    score: {
+      game_n: 1,
+      player1_score: 0,
+      player2_score: 0
+    }
+  }
+  print 'Correctly draw empty board with hud: '
+  set_hud!(test_board, 'computer', clear_board[:score])
+  puts test_board['game_field'] == tests['empty_board']
+
+  human_turn = {
+    player: 'human',
+    value: 'X',
+    address: ['mid', 'mid'],
+    score: {
+      game_n: 1,
+      player1_score: 0,
+      player2_score: 0
+    }
+  }
+  print 'Correctly draw example turn: '
+  draw_turn!(test_board, human_turn)['game_field']
+  puts test_board['game_field'] == tests['human_turn']
+
+  test_board['rows'].each_key do |row|
+    test_board['cols'].each_key do |col|
+      set_turn!(test_board, 'X', row, col)
+    end
+  end
+  print 'Draw marks at correct spots: '
+  puts test_board['game_field'] == tests['adresses']
+
+  promt = 'Hi there!'
+  print 'Correctly draw board + promt: '
+  puts promt(test_board, promt) == tests['promt']
+
+  print 'Correctly gathers turns from game tiles: '
+  should_be = [['X', 'X', 'X'], ['X', 'X', 'X'], ['X', 'X', 'X']]
+  puts get_board_status(board) == should_be
+
+  t = 4
+  puts "Continiue in #{t} sec."
+  sleep t
+  clear
+end
+# rubocop:enable  Metrics/AbcSize
+# rubocop:enable Metrics/MethodLength
+check_terminal_size(board)
+tests(board)
+
+player = ''
+value = ''
+row = ''
+col = ''
+game_n = ''
+score1 = ''
+score2 = ''
+turn = {
+  player: player,
+  value: value,
+  address: [row, col],
+  score: {
+    game_n: game_n,
+    player1_score: score1,
+    player2_score: score2
+  }
+}
