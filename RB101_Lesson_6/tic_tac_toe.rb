@@ -5,7 +5,7 @@ require 'io/console'
 board = YAML.load_file('./board.yml')
 
 def check_terminal_size(_board)
-  size = IO.console.winsize[1]
+  size = $stdout.winsize[1]
   return false unless size < 70
 
   "Terminal width of #{size} is unsupported,\
@@ -73,8 +73,14 @@ def promt(board, promt)
   board['game_field'] + ' ' + promt.to_s
 end
 
+def player_turn_promt(board, promt)
+  promt = "Please enter your turn: \
+  row col(umn)\
+  (see legend above)"
+  puts promt(board, promt)
+end
+
 def input
-  print '        => '
   gets.chomp.to_s
 end
 
@@ -85,19 +91,18 @@ def not_exist?(board, row, col)
 end
 
 def turn_input(board)
-  promt = "Please enter your turn: \
-  row col(umn)\
-  (see legend above)"
-  puts promt(board, promt)
   answer = input.split("\s")
-  case answer
-  when answer.empty?
-    '[ERROR] Nothing was typed, please repeat.'
-  when answer[1].empty?
-    '[ERROR] Please input both row and column.'
-  when not_exist?(answer)
-    "[ERROR] Such row or column not exist,\
+  if answer.join.nil? || answer.empty?
+    return '[ERROR] Nothing was typed, please repeat.'
+  elsif answer.length != 2
+    return '[ERROR] Please input both and only row and column.'
+  elsif answer[1].nil? || answer[1].empty?
+    return '[ERROR] Please also input column.'
+  elsif not_exist?(board, *answer)
+      return "[ERROR] Such row or column not exist,\
 consult with legend above"
+  else
+    return answer
   end
 end
 
@@ -105,18 +110,8 @@ end
 # rubocop:disable  Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
 def tests(board)
-  # neat way to work with stdin pipe
-  # wonder if works on windows
-  def with_stdin
-     stdin = $stdin             # remember $stdin
-     $stdin, write = IO.pipe    # create pipe assigning its "read end" to $stdin
-     yield write                # pass pipe's "write end" to block
-   ensure
-     write.close                # close pipe
-     $stdin = stdin             # restore $stdin
-   end
-  # ==================
   tests = YAML.load_file('./tests.yml')
+
   test_board = board
   puts 'Running tests: '
   clear_board = {
@@ -162,6 +157,47 @@ def tests(board)
   print 'Correctly gathers turns from game tiles: '
   should_be = [['X', 'X', 'X'], ['X', 'X', 'X'], ['X', 'X', 'X']]
   puts get_board_status(board) == should_be
+
+  print 'Correctly gets user input: '
+  # neat way to work with stdin pipe
+  require 'stringio'
+  str = 'mid mid'
+  io = StringIO.new
+  io.puts 'mid mid'
+  io.rewind
+  # returns stack pointer in case of multiple
+  # inputs, avoiding FILO
+  real_stdin = $stdin
+  $stdin = io
+  p input == str
+  $stdin = real_stdin
+
+  print 'Does not allow empty input: '
+  io = StringIO.new
+  io.puts
+  io.rewind
+  real_stdin = $stdin
+  $stdin = io
+  p turn_input(board) == "[ERROR] Nothing was typed, please repeat."
+  $stdin = real_stdin
+
+  print 'Allows only 2 input params: '
+  io = StringIO.new
+  io.puts 'mid mid top'
+  io.rewind
+  real_stdin = $stdin
+  $stdin = io
+  p turn_input(board) == "[ERROR] Please input both and only row and column."
+  $stdin = real_stdin
+
+  print 'Allows only rows from legend: '
+  io = StringIO.new
+  io.puts 'mid \n\n'
+  io.rewind
+  real_stdin = $stdin
+  $stdin = io
+  p turn_input(board) == "[ERROR] Such row or column not exist,consult with legend above"
+  $stdin = real_stdin
 
   t = 4
   puts "Continiue in #{t} sec."
