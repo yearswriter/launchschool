@@ -73,11 +73,11 @@ def promt(board, promt)
   board['game_field'] + ' ' + promt.to_s
 end
 
-def player_turn_promt(board, promt)
-  promt = "Please enter your turn: \
+def player_turn_promt(board)
+  turn_promt = "Please enter your turn: \
   row col(umn)\
   (see legend above)"
-  puts promt(board, promt)
+  puts promt(board, turn_promt)
 end
 
 def input
@@ -90,8 +90,8 @@ def not_exist?(board, row, col)
   !(row_exist && col_exist)
 end
 
-def turn_input(board)
-  answer = input.split("\s")
+def validate_input(board, answer)
+  answer = answer.split("\s")
   if answer.join.nil? || answer.empty?
     return '[ERROR] Nothing was typed, please repeat.'
   elsif answer.length != 2
@@ -99,7 +99,7 @@ def turn_input(board)
   elsif answer[1].nil? || answer[1].empty?
     return '[ERROR] Please also input column.'
   elsif not_exist?(board, *answer)
-      return "[ERROR] Such row or column not exist,\
+    return "[ERROR] Such row or column not exist,\
 consult with legend above"
   else
     return answer
@@ -109,6 +109,7 @@ end
 # just tests, no point in checking them
 # rubocop:disable  Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/LineLength
 def tests(board)
   tests = YAML.load_file('./tests.yml')
 
@@ -161,7 +162,7 @@ def tests(board)
   print 'Correctly gets user input: '
   # neat way to work with stdin pipe
   require 'stringio'
-  str = 'mid mid'
+  str = 'mid mid'.split("\s")
   io = StringIO.new
   io.puts 'mid mid'
   io.rewind
@@ -169,35 +170,17 @@ def tests(board)
   # inputs, avoiding FILO
   real_stdin = $stdin
   $stdin = io
-  p input == str
+  p input.split("\s") == str
   $stdin = real_stdin
 
   print 'Does not allow empty input: '
-  io = StringIO.new
-  io.puts
-  io.rewind
-  real_stdin = $stdin
-  $stdin = io
-  p turn_input(board) == "[ERROR] Nothing was typed, please repeat."
-  $stdin = real_stdin
+  p validate_input(board, '') == "[ERROR] Nothing was typed, please repeat."
 
   print 'Allows only 2 input params: '
-  io = StringIO.new
-  io.puts 'mid mid top'
-  io.rewind
-  real_stdin = $stdin
-  $stdin = io
-  p turn_input(board) == "[ERROR] Please input both and only row and column."
-  $stdin = real_stdin
+  p validate_input(board, 'mid mid top') == "[ERROR] Please input both and only row and column."
 
   print 'Allows only rows from legend: '
-  io = StringIO.new
-  io.puts 'mid \n\n'
-  io.rewind
-  real_stdin = $stdin
-  $stdin = io
-  p turn_input(board) == "[ERROR] Such row or column not exist,consult with legend above"
-  $stdin = real_stdin
+  p validate_input(board, 'mid \n\n') == "[ERROR] Such row or column not exist,consult with legend above"
 
   t = 4
   puts "Continiue in #{t} sec."
@@ -206,6 +189,7 @@ def tests(board)
 end
 # rubocop:enable  Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
+# rubocop:enable Metrics/LineLength
 check_terminal_size(board)
 tests(board)
 
