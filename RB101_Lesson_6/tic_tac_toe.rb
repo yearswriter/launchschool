@@ -2,8 +2,7 @@ require 'yaml'
 require 'pry'
 require 'io/console'
 
-board = YAML.load_file('./board.yml')
-
+#==terminall=size=check,=for=pretty=hud
 def check_terminal_size(_board)
   size = $stdout.winsize[1]
   return false unless size < 70
@@ -12,6 +11,7 @@ def check_terminal_size(_board)
   minimal is 70 chars. Please resize and restart."
 end
 
+# handy shorcat for portablity
 def clear
   system 'cls'
   system 'clear'
@@ -77,28 +77,26 @@ def player_turn_promt(board)
   turn_promt = "Please enter your turn: \
   row col(umn)\
   (see legend above)"
-  puts promt(board, turn_promt)
+  promt(board, turn_promt)
 end
 
 def input
   gets.chomp.to_s
 end
 
-def not_exist?(board, row, col)
+def exist?(board, row, col)
   row_exist = board['rows'].keys.include?(row)
-  col_exist = board['rows'].keys.include?(col)
-  !(row_exist && col_exist)
+  col_exist = board['cols'].keys.include?(col)
+  row_exist && col_exist
 end
 
-def validate_input(board, answer)
+def validate(board, answer)
   answer = answer.split("\s")
   if answer.join.nil? || answer.empty?
     return '[ERROR] Nothing was typed, please repeat.'
   elsif answer.length != 2
     return '[ERROR] Please input both and only row and column.'
-  elsif answer[1].nil? || answer[1].empty?
-    return '[ERROR] Please also input column.'
-  elsif not_exist?(board, *answer)
+  elsif !exist?(board, *answer)
     return "[ERROR] Such row or column not exist,\
 consult with legend above"
   else
@@ -106,6 +104,7 @@ consult with legend above"
   end
 end
 
+#----TESTS|||||||||||||||||||||||||||||||||||||||||||||||||||<
 # just tests, no point in checking them
 # rubocop:disable  Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
@@ -174,39 +173,76 @@ def tests(board)
   $stdin = real_stdin
 
   print 'Does not allow empty input: '
-  p validate_input(board, '') == "[ERROR] Nothing was typed, please repeat."
+  p validate(board, '') == "[ERROR] Nothing was typed, please repeat."
 
   print 'Allows only 2 input params: '
-  p validate_input(board, 'mid mid top') == "[ERROR] Please input both and only row and column."
+  p validate(board, 'mid mid top') == "[ERROR] Please input both and only row and column."
 
-  print 'Allows only rows from legend: '
-  p validate_input(board, 'mid \n\n') == "[ERROR] Such row or column not exist,consult with legend above"
+  print 'Do not allow rows & cols not from legend: '
+  p validate(board, 'mid \n\n') == "[ERROR] Such row or column not exist,consult with legend above"
+
+  puts 'Allow rows & cols from legend: '
+  board['rows'].keys.each do | row |
+    board['cols'].keys.each do | col |
+      puts
+      puts "#{row} #{col} #{!validate(board, "#{row} #{col}").include?('[ERROR]')}".to_s.rjust(20)
+    end
+  end
 
   t = 4
   puts "Continiue in #{t} sec."
   sleep t
-  clear
+#  clear
 end
 # rubocop:enable  Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/LineLength
+board = YAML.load_file('./board.yml')
 check_terminal_size(board)
 tests(board)
+#----TESTS|||||||||||||||||||||||||||||||||||||||||||||||||||<
+def game(board)
+  game = board['players_types'][1..]
+  board = YAML.load_file('./board.yml')
+  game_n = 0
+  address = ['mid','mid']
+  value = ' '
 
-player = ''
-value = ''
-row = ''
-col = ''
-game_n = ''
-score1 = ''
-score2 = ''
-turn = {
-  player: player,
-  value: value,
-  address: [row, col],
-  score: {
-    game_n: game_n,
-    player1_score: score1,
-    player2_score: score2
-  }
-}
+  game.cycle do |player|
+    game_n +=1
+    turn = {
+      player: player,
+      value: value,
+      address: address,
+      score: {
+        game_n: game_n,
+        player1_score: 0,
+        player2_score: 0
+      }
+    }
+    draw_turn!(board, turn)
+    case player
+    when 'human'
+      value = 'X'
+    when 'computer'
+      value = 'O'
+    else
+      'There is no such player type'
+      break
+    end
+
+    puts player_turn_promt(board).chomp
+    print '        => '
+    address = validate(board, input)
+    if address.include?('[ERROR]')
+      puts address
+      redo
+    else
+      turn[:address] = address
+      draw_turn!(board, turn)
+    end
+    break if game_n == 3
+  end
+end
+
+game(board)
