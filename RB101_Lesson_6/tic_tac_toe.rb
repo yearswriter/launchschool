@@ -181,6 +181,15 @@ def tests(board)
   print 'Do not allow rows & cols not from legend: '
   p validate(board, 'mid \n\n') == "[ERROR] Such row or column not exist,consult with legend above"
 
+ # TODO: test for do_turn! loop:
+ # 1. some method that can be called separatly,
+ # 2. it updates board state and takes turn {} object as param
+ # 3. validates if cell already empty
+ # 4. validates if board is full
+ # 5. needs complementary tests for methods that check if:
+ #  - cell is busy, board is full,
+ # 6. method that check game_state and checks if any of win condition met
+ # 7. general game loop, that cycle those methods
   puts 'Allow rows & cols from legend: '
   board['rows'].keys.each do | row |
     board['cols'].keys.each do | col |
