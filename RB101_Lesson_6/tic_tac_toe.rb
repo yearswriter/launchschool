@@ -17,7 +17,14 @@ def clear
   system 'clear'
 end
 
-def set_turn!(board, value, row, col)
+def get_cell(board, row, col)
+  row = board['rows'][row]
+  col = board['cols'][col]
+  tiles = board['game_field'].lines
+  tiles[row][col]
+end
+
+def set_cell!(board, value, row, col)
   row = board['rows'][row]
   col = board['cols'][col]
   tiles = board['game_field'].lines
@@ -39,13 +46,14 @@ def set_hud!(board, player, game_score)
   board['game_field'] = game_field
 end
 
+# need a method to just display without mutations
 def draw_turn!(board, turn)
   player = turn[:player]
   value = turn[:value]
   address = turn[:address]
   game_score = turn[:score]
 
-  set_turn!(board, value, *address)
+  set_cell!(board, value, *address)
   set_hud!(board, player, game_score)
 
   board
@@ -74,9 +82,9 @@ def promt(board, promt)
 end
 
 def player_turn_promt(board)
-  turn_promt = "Please enter your turn: \
-  row col(umn)\
-  (see legend above)"
+  turn_promt = "Please enter your turn:" +
+  "row col(umn)" +
+  "(see legend above)"
   promt(board, turn_promt)
 end
 
@@ -90,6 +98,15 @@ def exist?(board, row, col)
   row_exist && col_exist
 end
 
+def empty?(board, row, col)
+  cell = get_cell(board, row, col)
+  if cell.eql?(' ')
+    return true
+  else
+    return false
+  end
+end
+
 def validate(board, answer)
   answer = answer.split("\s")
   if answer.join.nil? || answer.empty?
@@ -97,8 +114,10 @@ def validate(board, answer)
   elsif answer.length != 2
     return '[ERROR] Please input both and only row and column.'
   elsif !exist?(board, *answer)
-    return "[ERROR] Such row or column not exist,\
-consult with legend above"
+    return "[ERROR] Such row or column not exist," +
+    " consult with legend above."
+  elsif !empty?(board, *answer)
+    return "[ERROR] This cell is already taken."
   else
     return answer
   end
@@ -144,7 +163,7 @@ def tests(board)
 
   test_board['rows'].each_key do |row|
     test_board['cols'].each_key do |col|
-      set_turn!(test_board, 'X', row, col)
+      set_cell!(test_board, 'X', row, col)
     end
   end
   print 'Draw marks at correct spots: '
@@ -179,20 +198,27 @@ def tests(board)
   p validate(board, 'mid mid top') == "[ERROR] Please input both and only row and column."
 
   print 'Do not allow rows & cols not from legend: '
-  p validate(board, 'mid \n\n') == "[ERROR] Such row or column not exist,consult with legend above"
+  p validate(board, 'mid \n\n') == "[ERROR] Such row or column not exist, consult with legend above."
 
+  print 'Do not allow same cell turn: '
+  p validate(test_board, 'mid mid') == "[ERROR] This cell is already taken."
  # TODO: test for do_turn! loop:
  # 1. some method that can be called separatly,
  # 2. it updates board state and takes turn {} object as param
- # 3. validates if cell already empty
  # 4. validates if board is full
  # 5. needs complementary tests for methods that check if:
  #  - cell is busy, board is full,
  # 6. method that check game_state and checks if any of win condition met
  # 7. general game loop, that cycle those methods
+ test_board['rows'].each_key do |row|
+   test_board['cols'].each_key do |col|
+     set_cell!(test_board, ' ', row, col)
+   end
+ end
+
   puts 'Allow rows & cols from legend: '
-  board['rows'].keys.each do | row |
-    board['cols'].keys.each do | col |
+  test_board['rows'].keys.each do | row |
+    test_board['cols'].keys.each do | col |
       puts
       puts "#{row} #{col} #{!validate(board, "#{row} #{col}").include?('[ERROR]')}".to_s.rjust(20)
     end
@@ -218,11 +244,12 @@ def game(board)
   value = ' '
 
   game.cycle do |player|
+#    clear
     game_n +=1
     turn = {
       player: player,
       value: value,
-      address: address,
+      address: ['',''],
       score: {
         game_n: game_n,
         player1_score: 0,
@@ -243,11 +270,13 @@ def game(board)
     puts player_turn_promt(board).chomp
     print '        => '
     address = validate(board, input)
+    binding.pry
     if address.include?('[ERROR]')
       puts address
       redo
     else
       turn[:address] = address
+      binding.pry
       draw_turn!(board, turn)
     end
     break if game_n == 3
