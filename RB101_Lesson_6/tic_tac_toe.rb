@@ -2,8 +2,8 @@ require 'yaml'
 require 'pry'
 require 'io/console'
 
-#==terminall=size=check,=for=pretty=hud
-def check_terminal_size(_board)
+#  terminall size check, for pretty hud
+def wrong_terminal_size(_board)
   size = $stdout.winsize[1]
   return false unless size < 70
 
@@ -73,7 +73,7 @@ def get_board_status(board)
 end
 
 def promt(board, promt)
-  er = check_terminal_size(board)
+  er = wrong_terminal_size(board)
   if er
     puts er
     exit
